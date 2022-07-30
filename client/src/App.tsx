@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const socket = io('https://lit-citadel-75107.herokuapp.com/') as Socket<
+const DEPLOY_BACKEND = 'https://lit-citadel-75107.herokuapp.com/';
+const LOCAL_BACKEND = 'http://localhost:8080';
+
+const socket = io(LOCAL_BACKEND) as Socket<
   ServerToClientEvents,
   ClientToServerEvents
 >;
