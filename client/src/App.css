@@ -1,0 +1,660 @@
+@font-face {
+  font-family: "evil-empire";
+  src: url("./assets/fonts/EvilEmpire.ttf");
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "evil-empire", sans-serif;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  h2 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (min-width: 1900px) {
+  h2 {
+    font-size: 2rem;
+  }
+}
+
+.page {
+  margin: 0 auto;
+  width: 315px;
+}
+
+@media (min-width: 768px) {
+  .page {
+    width: 380px;
+  }
+}
+
+@media (min-width: 1900px) {
+  .page {
+    width: 470px;
+  }
+}
+
+.tic-tac-toe-title {
+  color: #1a4756;
+  letter-spacing: 2px;
+  font-size: 2.15rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .tic-tac-toe-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 1900px) {
+  .tic-tac-toe-title {
+    font-size: 3rem;
+  }
+}
+
+.tic-tac-toe-game {
+  color: #1a4756;
+  position: relative;
+  width: 315px;
+  height: 315px;
+}
+
+@media (min-width: 768px) {
+  .tic-tac-toe-game {
+    width: 380px;
+    height: 380px;
+  }
+}
+
+@media (min-width: 1900px) {
+  .tic-tac-toe-game {
+    width: 470px;
+    height: 470px;
+  }
+}
+
+.gameboard {
+  width: 100%;
+  height: 100%;
+  margin-bottom: 15px;
+  gap: 5px;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.cell {
+  background-color: #43A6C6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.cell.x,
+.cell.o {
+  cursor: not-allowed;
+}
+
+.cell.x::before,
+.cell.x::after,
+.cell.o::before {
+  background-color: #1a4756;
+}
+
+.gameboard.x .cell:not(.x):not(.o):hover::before,
+.gameboard.x .cell:not(.x):not(.o):hover::after,
+.gameboard.o .cell:not(.x):not(.o):hover::before {
+  background-color: #91cbde;
+}
+
+.cell.x::before,
+.cell.x::after,
+.gameboard.x .cell:not(.x):not(.o):hover::before,
+.gameboard.x .cell:not(.x):not(.o):hover::after {
+  position: absolute;
+  content: "";
+  width: 12%;
+  height: 100%;
+  border-radius: 10px;
+}
+
+.cell.x::before,
+.gameboard.x .cell:not(.x):not(.o):hover::before {
+  transform: rotate(45deg);
+}
+
+.cell.x::after,
+.gameboard.x .cell:not(.x):not(.o):hover::after {
+  transform: rotate(-45deg);
+}
+
+.cell.o::before,
+.cell.o::after,
+.gameboard.o .cell:not(.x):not(.o):hover::before,
+.gameboard.o .cell:not(.x):not(.o):hover::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+}
+
+.cell.o::before,
+.gameboard.o .cell:not(.x):not(.o):hover::before {
+  width: 85%;
+  height: 85%;
+}
+
+.cell.o::after,
+.gameboard.o .cell:not(.x):not(.o):hover::after {
+  background-color: #43A6C6;
+  width: 65%;
+  height: 65%;
+}
+
+.end-message {
+  visibility: hidden;
+  opacity: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85);
+  transition: opacity 1s;
+}
+
+.end-message .end-text {
+  text-align: center;
+  font-size: 2rem;
+  letter-spacing: 1px;
+}
+
+.end-message #restart-button,
+.end-message #game-start,
+.end-message #game-leave,
+.end-message #game-rematch {
+  font-size: 1.2rem;
+  background-color: #1a4756;
+  color: #fff;
+  border: none;
+  width: 40%;
+  padding: 8px 0;
+  margin-top: 10px;
+  cursor: pointer;
+  font-family: "evil-empire";
+  letter-spacing: 1px;
+}
+
+@media (min-width: 768px) {
+
+  .end-message #restart-button,
+  .end-message #game-start,
+  .end-message #game-leave,
+  .end-message #game-rematch {
+    margin-top: 15px;
+  }
+}
+
+.end-message.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.multiplayer-menu {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 0px 0px 15px 3px #43A6C6;
+}
+
+.multiplayer-menu.search {
+  display: flex;
+}
+
+.multiplayer-menu.search .pending-invites.show,
+.multiplayer-menu.search .players-online {
+  display: flex;
+}
+
+.multiplayer-menu.entering-username {
+  display: flex;
+}
+
+.multiplayer-menu.entering-username .username-form-container {
+  display: flex;
+}
+
+.username-form-container {
+  height: 100%;
+  width: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.username-form-container #username-form {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 25px;
+}
+
+.username-form-container #username-form .username-label {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.username-form-container #username-form #username {
+  height: 25px;
+  margin-bottom: 5px;
+  border: 1px solid #1a4756;
+  border-radius: 3px;
+}
+
+.username-form-container #username-form #submit-username {
+  height: 25px;
+  font-size: 1rem;
+  border: none;
+  background-color: #1a4756;
+  color: #fff;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.username-form-container #username-form .connection-error {
+  color: #B00;
+  text-align: center;
+  margin-top: 5px;
+  position: absolute;
+  top: 190px;
+  width: 175px;
+}
+
+@media (min-width: 768px) {
+  .username-form-container #username-form .connection-error {
+    top: 223px;
+  }
+}
+
+.pending-invites {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  max-height: 125px;
+  overflow-y: scroll;
+  background-color: #fff;
+  position: relative;
+  gap: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0px 5px 10px #888;
+}
+
+@media (min-width: 768px) {
+  .pending-invites {
+    max-height: 170px;
+  }
+}
+
+.pending-invites:last-child {
+  margin: 0px;
+}
+
+.players-online {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  flex-grow: 1;
+  overflow-y: scroll;
+  background-color: #fff;
+  position: relative;
+  gap: 10px;
+}
+
+.players-online:last-child {
+  margin: 0px;
+}
+
+.multiplayer-session {
+  flex: 0 0 35px;
+  color: #1a4756;
+  border: none;
+  text-align: left;
+  background-color: #b8deea;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.multiplayer-session:hover {
+  background-color: #43A6C6;
+}
+
+.multiplayer-session.confirm {
+  color: #fff;
+  background-color: #1a4756;
+  cursor: initial;
+}
+
+.multiplayer-session.confirm .session-icon {
+  display: block;
+}
+
+.multiplayer-session.active {
+  background-color: #00e600;
+  cursor: initial;
+}
+
+.multiplayer-session.active .cancel-icon {
+  display: block;
+}
+
+.multiplayer-session.pending {
+  background-color: #8b008b;
+  color: #fff;
+}
+
+.multiplayer-session.pending .session-icon {
+  display: block;
+}
+
+.multiplayer-session .session-icon {
+  display: none;
+  float: right;
+  margin-left: 10px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  width: 25px;
+  height: 25px;
+}
+
+.multiplayer-session .accept-icon {
+  background-image: url("./assets/icons/accept.png");
+}
+
+.multiplayer-session .cancel-icon {
+  background-image: url("./assets/icons/cancel.png");
+}
+
+.game-mode {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.game-mode .game-mode-btn {
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  transition: transform 0.5s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-mode .game-mode-btn .game-mode-label {
+  transition: opacity 0.3s;
+  opacity: 0;
+  color: #1a4756;
+  margin-top: 5px;
+}
+
+.game-mode .game-mode-btn .game-mode-icon {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  background-size: contain;
+}
+
+@media (min-width: 768px) {
+  .game-mode .game-mode-btn .game-mode-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.game-mode .game-mode-btn .single-icon {
+  background-image: url("./assets/icons/single.png");
+}
+
+.game-mode .game-mode-btn .multi-icon {
+  background-image: url("./assets/icons/multiplayer.png");
+}
+
+.game-mode .game-mode-btn .ai-icon {
+  background-image: url("./assets/icons/ai.png");
+}
+
+.game-mode .game-mode-btn.active .game-mode-label {
+  opacity: 1;
+}
+
+.game-mode .game-mode-btn:hover,
+.game-mode .game-mode-btn:active {
+  transform: scale(1.25);
+}
+
+.game-mode .game-mode-btn:hover .game-mode-label,
+.game-mode .game-mode-btn:active .game-mode-label {
+  opacity: 1;
+}
+
+.tic-tac-toe-game.multiplayer .game-mode {
+  display: none;
+}
+
+.tic-tac-toe-game.multiplayer .multiplayer-options {
+  display: flex;
+}
+
+.multiplayer-options {
+  display: none;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.multiplayer-options .multiplayer-game-timer-container {
+  position: relative;
+  bottom: 5px;
+}
+
+.multiplayer-options .multiplayer-game-timer {
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+@media (min-width: 768px) {
+  .multiplayer-options .multiplayer-game-timer {
+    font-size: 1.3rem;
+  }
+}
+
+@media (min-width: 1900px) {
+  .multiplayer-options .multiplayer-game-timer {
+    font-size: 1.5rem;
+  }
+}
+
+.multiplayer-options .options-btn {
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  transition: transform 0.5s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.multiplayer-options .options-btn .options-label {
+  opacity: 0;
+  text-align: left;
+  color: #1a4756;
+  transition: opacity 0.3s;
+}
+
+.multiplayer-options .options-btn .options-icon {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  background-size: contain;
+}
+
+@media (min-width: 768px) {
+  .multiplayer-options .options-btn .options-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.multiplayer-options .options-btn#leave-btn .options-icon {
+  position: relative;
+  left: 1px;
+  background-image: url("./assets/icons/leave.png");
+}
+
+@media (min-width: 768px) {
+  .multiplayer-options .options-btn#leave-btn .options-icon {
+    left: 2px;
+  }
+}
+
+.multiplayer-options .options-btn#settings-btn .options-icon {
+  background-image: url("./assets/icons/settings.png");
+}
+
+.multiplayer-options .options-btn:hover,
+.multiplayer-options .options-btn:active {
+  transform: scale(1.25);
+}
+
+.multiplayer-options .options-btn:hover .options-label,
+.multiplayer-options .options-btn:active .options-label {
+  opacity: 1;
+}
+
+.multiplayer-game-settings.show~.multiplayer-options #settings-btn .options-icon {
+  background-image: url("./assets/icons/tic-tac-toe.png");
+}
+
+.multiplayer-game-settings {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 0px 0px 15px 3px #43A6C6;
+  padding: 20px;
+  z-index: 2;
+}
+
+.multiplayer-game-settings.show {
+  display: flex;
+}
+
+.multiplayer-game-settings .settings>* {
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  line-height: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .multiplayer-game-settings .settings>* {
+    margin-bottom: 10px;
+  }
+}
+
+.multiplayer-game-settings .title-game-settings {
+  text-align: center;
+  margin: 0;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+  .multiplayer-game-settings .title-game-settings {
+    margin-bottom: 30px;
+  }
+}
+
+@media (min-width: 1900px) {
+  .multiplayer-game-settings .title-game-settings {
+    margin-bottom: 35px;
+  }
+}
+
+.multiplayer-game-settings .timeout-label {
+  display: block;
+  margin-top: 25px;
+  line-height: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .multiplayer-game-settings .timeout-label {
+    margin-top: 30px;
+    line-height: 2rem;
+  }
+}
+
+@media (min-width: 1900px) {
+  .multiplayer-game-settings .timeout-label {
+    margin-top: 20px;
+  }
+}
+
+.multiplayer-game-settings .timeout-label #request-timeout {
+  margin-left: 5px;
+  height: 1.5rem;
+  background-color: #1a4756;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-family: "evil-empire";
+  letter-spacing: 1px;
+  position: relative;
+  bottom: 1px;
+}
+
+@media (min-width: 768px) {
+  .multiplayer-game-settings .timeout-label #request-timeout {
+    height: 2rem;
+  }
+}
+
+.multiplayer-game-settings .changes-disclaimer {
+  margin: auto 0 0;
+  text-align: center;
+  color: #b00;
+}
+
+.multiplayer-game-rematch .buttons {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.multiplayer-game-rematch .buttons #game-leave,
+.multiplayer-game-rematch .buttons #game-rematch {
+  margin: 0;
+  width: 100px;
+}

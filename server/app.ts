@@ -43,13 +43,17 @@ io.on('connection', (socket) => {
     breakTime: 10 || 20 || 30 || 60 || Infinity,
   }
 
-  ON: enter - accepts Search parameters (which are fetched from local storage on client side). Checks whether given usename already exists in the database and sends responce based on that:
+  ON: enter - accepts search parameters (which are fetched from local storage on client side). Checks whether given usename already exists in the database and sends responce based on that:
   EMIT: enterSuccess - the nickname isn't already in the db
   EMIT: enterFailure - the nickname is already in the db
   Than saves search params, updates the db and initiates searchUpdate based on them.
   EMIT: searchUpdate - reads the database and sends data based on search params.
 
-  ON: changeSearchParams - 
+  ON: leaveSearch - delete user from the database, trace back all the invites and delete them too.
+
+  ON: disconnect - the same as leaveSearch but if the user is in game then leaveGame()
+
+  ON: changeSearchParams - change search parameters.
   */
 
   /*
