@@ -1,43 +1,35 @@
 interface ServerToClientEvents {
-  test: () => void;
-
   enterSuccess: () => void;
   enterFailure: (message: string) => void;
-  sessionsupdate: (sessionData: SessionData[]) => void;
-  invite: (inviter: string) => void; // Here we send socketID of the inviter
-  startGame: (opponent: string, xTurn: boolean) => void;
+  searchUpdate: (sessionData: SessionData[]) => void;
+  openRoom: (breakTime: number, opponent: string) => void;
 
-  // changeMoveTime: (time: number) => void;
-  pause: (time: number) => void;
-  move: (position: number) => void;
-  timeIsUp: (isDefeat: boolean) => void;
-  restartMatch: () => void;
-  gameOver: () => void;
+  opponentReady: () => void;
+  startGame: (isFirstMove: boolean) => void;
+
+  opponentMove: (position: number) => void;
+  randomMove: (position: number) => void;
+  gameOver: (winner: string) => void;
+  dismissGame: (message: string) => void;
 }
 
 interface ClientToServerEvents {
-  test: () => void;
-
   enter: (username: string) => void;
-  invite: (invited: string) => void; // Here we send socketID of the invited
-  acceptInvite: (inviter: string) => void;
-  cancelInvite: (inviter: string, wasInvited: boolean) => void;
+  leaveSearch: () => void;
+  changeSearchParams: (searchParams: {
+    matchTime: { value: number; strict: boolean };
+    breakTime: { value: number; strict: boolean };
+  }) => void;
 
-  // changeMoveTime: (time: number) => void;
-  timeout: (time?: number) => void;
+  invite: (invited: string) => void; // Here we send socketID of the invited
+  cancelInvite: (inviter: string, wasInvited: boolean) => void;
+  acceptInvite: (inviter: string) => void;
+
+  ready: () => void;
   move: (position: number) => void;
-  restartMatch: () => void;
   leaveGame: () => void;
 }
 
 interface InterServerEvents {}
 
-// To share information between servers
 interface SocketData {}
-
-type StandartSocket = Socket<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->;

@@ -40,7 +40,10 @@ io.on('connection', (socket) => {
       value: 10 || 20 || 30 || 60 || Infinity, 
       strict: boolean
     },
-    breakTime: 10 || 20 || 30 || 60 || Infinity,
+    breakTime: { 
+      value: 10 || 20 || 30 || 60 || Infinity, 
+      strict: boolean
+    },
   }
 
   ON: enter - accepts search parameters (which are fetched from local storage on client side). Checks whether given usename already exists in the database and sends responce based on that:
@@ -64,7 +67,7 @@ io.on('connection', (socket) => {
   ON: cancelInvite - accepts nickname of who's the invite being canceled (invitee) on and whether socket is the inviter or invited. Checks whether the invitee is in the database and updates the db.
 
   ON: acceptInvite - accepts nickname of the inviter, checks if the inviter is in the database, checks if the inviter has actually send the invite and if so creates a room (in socket.io making a room is unnecessary, we only need to change it in the db) with both players, then:
-  EMIT: openRoom - sends breaktime and opponent's nickname (put `Playing against ${opponent}` above the gameboard on client side).
+  EMIT: openRoom - sends breaktime and opponent's nickname to both players (put `Playing against ${opponent}` above the gameboard on client side... or not).
   Then pause(), deletes both usernames from 'Search' branch in the db (send them to 'ActiveGames' branch as a room), updates the db, declares timer and assigns it to global variable.
   */
 
@@ -76,7 +79,7 @@ io.on('connection', (socket) => {
   EMIT: opponentReady - sends nothing.
   EMIT: startGame - sends isFirstMove.
 
-  ON: move - Stops the timer. Checks the move's validity, if invalid randomizes the move, updates the database checks for whether the victory conditions are fullfilled, if not, emits randomMove to socket and opponentMove to opponent and starts the opponent's timer through global object, if yes, emits gameOver to both players and pause(). If valid, the same procedure but doesn't emit to socket anything.
+  ON: move - Accepts move position. Stops the timer. Checks the move's validity, if invalid randomizes the move, updates the database checks for whether the victory conditions are fullfilled, if not, emits randomMove to socket and opponentMove to opponent and starts the opponent's timer through global object, if yes, emits gameOver to both players and pause(). If valid, the same procedure but doesn't emit to socket anything.
   EMIT: opponentMove - sends the position of the move.
   EMIT: randomMove - sends the position of the move.
   EMIT: gameOver - sends victor's username and break time.
@@ -92,11 +95,6 @@ io.on('connection', (socket) => {
 
   function leaveGame - if socket is in the search branch, transfer him to the game branch. If opponent is in the game branch, transfer him to the search. Delete the game from the db.
   */
-
-  socket.on('test', () => {
-    console.log('server test passed');
-    socket.emit('test');
-  });
 });
 
 httpServer.listen(Number(process.env.PORT) || 8080);
