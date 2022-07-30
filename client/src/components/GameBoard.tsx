@@ -4,12 +4,19 @@ type Props = {
   className: string;
   cellClickHandler: (positon: number) => void;
   cellsMarks: string[];
+  endMessageProps: {
+    hidden: boolean;
+    buttonText: string;
+    messageText: string;
+    onClick: () => void;
+  };
 };
 
 export default function GameBoard({
   className,
   cellClickHandler,
-  cellsMarks
+  cellsMarks,
+  endMessageProps
 }: Props) {
   return (
     <>
@@ -25,10 +32,10 @@ export default function GameBoard({
           ))}
       </div>
 
-      <div className="end-message">
-        <div className="end-text"></div>
-        <button id="restart-button" onClick={() => {}}>
-          Restart
+      <div className={'end-message ' + (endMessageProps.hidden ? '' : 'show')}>
+        <div className="end-text">{endMessageProps.messageText}</div>
+        <button id="restart-button" onClick={endMessageProps.onClick}>
+          {endMessageProps.buttonText}
         </button>
       </div>
     </>

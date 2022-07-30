@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import GameBoard from './GameBoard';
 
 type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
 
-const WIN_COMBINATIONS = [
+const WINNING_COMBINATIONS = [
   [0, 3, 6],
   [1, 4, 7],
   [2, 5, 8],
@@ -17,6 +17,39 @@ const WIN_COMBINATIONS = [
 export default function SinglePlayer({ setGameMode }: Props) {
   const [currentMove, setCurrentMove] = useState('o');
   const [cellsMarks, setCellsMarks] = useState(Array<string>(9).fill(''));
+  const [endMessage, setEndMessage] = useState({
+    hidden: true,
+    buttonText: 'Restart',
+    messageText: '',
+    onClick: () => {
+      setCellsMarks(Array<string>(9).fill(''));
+      setEndMessage((endMessage) => {
+        return { ...endMessage, ...{ hidden: true } };
+      });
+    }
+  });
+
+  useEffect(() => {
+    const prevMove = currentMove === 'o' ? 'x' : 'o';
+    const isWin = checkWin(prevMove, cellsMarks);
+    const isDraw = checkDraw(cellsMarks);
+
+    if (!isWin && !isDraw) return;
+
+    const messageText = isWin
+      ? `${prevMove === 'x' ? 'Cross' : 'Circle'} player wins!`
+      : 'Draw!';
+
+    setEndMessage((endMessage) => {
+      return {
+        ...endMessage,
+        ...{
+          hidden: false,
+          messageText: messageText
+        }
+      };
+    });
+  }, [cellsMarks, currentMove]);
 
   return (
     <>
@@ -24,6 +57,7 @@ export default function SinglePlayer({ setGameMode }: Props) {
         className={currentMove}
         cellClickHandler={(pos: number) => {
           if (cellsMarks[pos]) return;
+
           setCellsMarks((cellsMarks) => [
             ...cellsMarks.slice(0, pos),
             currentMove,
@@ -32,6 +66,7 @@ export default function SinglePlayer({ setGameMode }: Props) {
           setCurrentMove((currentMove) => (currentMove === 'o' ? 'x' : 'o'));
         }}
         cellsMarks={cellsMarks}
+        endMessageProps={endMessage}
       />
       <div className="game-mode">
         {['single', 'multi', 'ai'].map((mode) => {
@@ -55,6 +90,14 @@ export default function SinglePlayer({ setGameMode }: Props) {
     </>
   );
 }
+
+const checkWin = (currentMove: string, cellsMarks: string[]) => {
+  return WINNING_COMBINATIONS.some((combination) => {
+    return combination.every((pos) => cellsMarks[pos] === currentMove);
+  });
+};
+
+const checkDraw = (cellsMarks: string[]) => cellsMarks.every((mark) => mark);
 
 const capitalize = (string: string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
