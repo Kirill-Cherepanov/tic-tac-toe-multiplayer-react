@@ -14,7 +14,12 @@ const io = new Server<
     origin: [
       'https://zesty-gecko-26d2c4.netlify.app/',
       'http://127.0.0.1:3000',
-      'http://localhost:3000'
+      'http://192.168.100.2:3000',
+      'http://localhost:3000',
+      'http://37.214.72.201:3000',
+      'http://37.214.72.201',
+      '37.214.72.201:3000',
+      '37.214.72.201'
     ],
     methods: ['GET']
   }
