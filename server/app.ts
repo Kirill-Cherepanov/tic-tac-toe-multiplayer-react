@@ -13,12 +13,18 @@ const io = new Server<
   cors: {
     origin: [
       'https://zesty-gecko-26d2c4.netlify.app/',
-      'http://127.0.0.1:8080'
+      'http://127.0.0.1:3000',
+      'http://localhost:3000'
     ],
     methods: ['GET']
   }
 });
 
-io.on('connection', (socket) => socket.emit('enterSuccess'));
+io.on('connection', (socket) => {
+  socket.on('test', () => {
+    console.log('server test passed');
+    socket.emit('test');
+  });
+});
 
-httpServer.listen(Number(process.env.PORT) || 3000);
+httpServer.listen(Number(process.env.PORT) || 8080);
