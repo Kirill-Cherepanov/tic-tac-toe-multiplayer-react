@@ -1,14 +1,14 @@
 interface ServerToClientEvents {
   enterSuccess: () => void;
   enterFailure: (message: string) => void;
-  searchUpdate: (sessionsData: SessionsData) => void;
-  openRoom: (breakTime: number, opponent: string) => void;
+  searchUpdate: (sessionData: SessionsData) => void;
+  openRoom: (breakTime: number, matchTime: number, opponent: string) => void;
 
   opponentReady: () => void;
   startGame: (isFirstMove: boolean) => void;
 
   opponentMove: (position: number) => void;
-  randomMove: (position: number) => void;
+  randomMove: (cellMarks: string[]) => void;
   gameOver: (winner: string) => void;
   dismissGame: (message: string) => void;
 }

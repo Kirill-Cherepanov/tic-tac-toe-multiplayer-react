@@ -5,7 +5,6 @@ import useLocalStorage from '../hooks/useLocalStorage';
 
 type Props = {
   goBack: () => void;
-  username: string;
   socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 };
 
@@ -20,7 +19,7 @@ const DEFAULT_SEARCH_PARAMS = {
   }
 };
 
-export default function MultiplayerMenu({ goBack, username, socket }: Props) {
+export default function MultiplayerMenu({ goBack, socket }: Props) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionsData>({});
   const [searchParams, setSearchParams] = useLocalStorage<SearchParams>(
@@ -175,7 +174,7 @@ export default function MultiplayerMenu({ goBack, username, socket }: Props) {
       <div className="multiplayer-options">
         <button className="options-btn" id="leave-btn" onClick={goBack}>
           <i className="options-icon"></i>
-          <label className="options-label">Leave</label>
+          <label className="options-label">Return</label>
         </button>
         <button
           className="options-btn"

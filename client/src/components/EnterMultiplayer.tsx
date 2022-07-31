@@ -3,8 +3,17 @@ import capitalize from '../utilities/capitalize';
 import { io, Socket } from 'socket.io-client';
 import MultiplayerMenu from './MultiplayerMenu';
 import useLocalStorage from '../hooks/useLocalStorage';
+import MultiPlayer from './MultiPlayer';
 
 type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
+
+type MultiPlayerProps = {
+  breakTime: number;
+  matchTime: number;
+  opponent: string;
+  leaveGame: () => void;
+  socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+};
 
 interface UsernameFormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
@@ -18,8 +27,11 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
     undefined | Socket<ServerToClientEvents, ClientToServerEvents>
   >();
   const [username, setUsername] = useLocalStorage('usename', '');
-  const [isInSearch, setIsInSearch] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isInSearch, setIsInSearch] = useState(false);
+  const [isInGame, setIsInGame] = useState(false);
+  const [multiplayerProps, setMultiplayerProps] =
+    useState<MultiPlayerProps | null>(null);
 
   useEffect(() => {
     setSocket(
@@ -28,6 +40,22 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
   }, []);
 
   useEffect(() => {
+    socket?.on('openRoom', (breakTime, matchTime, opponent) => {
+      setMultiplayerProps({
+        breakTime,
+        matchTime,
+        opponent,
+        leaveGame: () => {
+          socket.emit('leaveGame');
+          setIsInGame(false);
+          setIsInSearch(true); // DELETE IF SOMETHING DOESN'T WORK
+        },
+        socket
+      });
+      setIsInGame(true);
+      setIsInSearch(false);
+    });
+
     return () => {
       socket?.disconnect();
     };
@@ -50,12 +78,12 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
 
   if (isInSearch) {
     return (
-      <MultiplayerMenu
-        goBack={() => setIsInSearch(false)}
-        username={username}
-        socket={socket!}
-      />
+      <MultiplayerMenu goBack={() => setIsInSearch(false)} socket={socket!} />
     );
+  }
+
+  if (isInGame) {
+    return <MultiPlayer {...multiplayerProps!} />;
   }
 
   return (

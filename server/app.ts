@@ -67,7 +67,7 @@ io.on('connection', (socket) => {
   ON: cancelInvite - accepts nickname of who's the invite being canceled (invitee) on and whether socket is the inviter or invited. Checks whether the invitee is in the database and updates the db.
 
   ON: acceptInvite - accepts nickname of the inviter, checks if the inviter is in the database, checks if the inviter has actually send the invite and if so creates a room (in socket.io making a room is unnecessary, we only need to change it in the db) with both players, then:
-  EMIT: openRoom - sends breaktime and opponent's nickname to both players (put `Playing against ${opponent}` above the gameboard on client side... or not).
+  EMIT: openRoom - sends break time and opponent's nickname to both players.
   Then pause(), deletes both usernames from 'Search' branch in the db (send them to 'ActiveGames' branch as a room), updates the db, declares timer and assigns it to global variable.
   */
 
@@ -81,8 +81,8 @@ io.on('connection', (socket) => {
 
   ON: move - Accepts move position. Stops the timer. Checks the move's validity, if invalid randomizes the move, updates the database checks for whether the victory conditions are fullfilled, if not, emits randomMove to socket and opponentMove to opponent and starts the opponent's timer through global object, if yes, emits gameOver to both players and pause(). If valid, the same procedure but doesn't emit to socket anything.
   EMIT: opponentMove - sends the position of the move.
-  EMIT: randomMove - sends the position of the move.
-  EMIT: gameOver - sends victor's username and break time.
+  EMIT: randomMove - sends the whole board.
+  EMIT: gameOver - sends victor's username.
 
   ON: leaveGame - leaveGame(). Update the db.
   EMIT: dismissGame - sends a message of what has happened (it should be displayed until the user clicks on leave button himself while start game button should disappear).

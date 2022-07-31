@@ -94,7 +94,7 @@ export default function SearchSettings({ searchParamsState, goBack }: Props) {
       <div className="multiplayer-options">
         <button className="options-btn" id="leave-btn" onClick={goBack}>
           <i className="options-icon"></i>
-          <label className="options-label">Leave</label>
+          <label className="options-label">Return</label>
         </button>
       </div>
     </>
