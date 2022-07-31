@@ -75,13 +75,12 @@ io.on('connection', (socket) => {
   Gameplay mechanics
 
   ON: ready (1) - emits opponentReady to opponent and changes 'ON: ready (1)' listener to (2)
-  ON: ready (2) - emits startGame to both players, starts the timer for the game and stops it for the player that doesn't make a move at this turn. Once the time is over, randomizes a move, emits randomMove to socket and move to opponent. Then changes listener to (1)
+  ON: ready (2) - emits startGame to both players, starts the timer for the game and stops it for the player that doesn't make a move at this turn. Once the time is over, emits gameOver. Then changes listener to (1)
   EMIT: opponentReady - sends nothing.
   EMIT: startGame - sends isFirstMove.
 
-  ON: move - Accepts move position. Stops the timer. Checks the move's validity, if invalid randomizes the move, updates the database checks for whether the victory conditions are fullfilled, if not, emits randomMove to socket and opponentMove to opponent and starts the opponent's timer through global object, if yes, emits gameOver to both players and pause(). If valid, the same procedure but doesn't emit to socket anything.
+  ON: move - Accepts move position. Stops the timer. Checks the move's validity, if invalid emits gameOver, else updates the database. Checks for whether the victory conditions are fullfilled, if not, emits opponentMove to opponent and starts the opponent's timer through global object, if yes, emits gameOver to both players and pause()
   EMIT: opponentMove - sends the position of the move.
-  EMIT: randomMove - sends the whole board.
   EMIT: gameOver - sends victor's username.
 
   ON: leaveGame - leaveGame(). Update the db.

@@ -8,7 +8,6 @@ interface ServerToClientEvents {
   startGame: (isFirstMove: boolean) => void;
 
   opponentMove: (position: number) => void;
-  randomMove: (cellMarks: string[]) => void;
   gameOver: (winner: string) => void;
   dismissGame: (message: string) => void;
 }
