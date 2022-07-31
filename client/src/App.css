@@ -216,7 +216,7 @@ body {
 }
 
 .multiplayer-menu {
-  display: none;
+  display: flex;
   flex-direction: column;
   position: absolute;
   top: 0;
@@ -226,27 +226,10 @@ body {
   box-shadow: 0px 0px 15px 3px #43A6C6;
 }
 
-.multiplayer-menu.search {
-  display: flex;
-}
-
-.multiplayer-menu.search .pending-invites.show,
-.multiplayer-menu.search .players-online {
-  display: flex;
-}
-
-.multiplayer-menu.entering-username {
-  display: flex;
-}
-
-.multiplayer-menu.entering-username .username-form-container {
-  display: flex;
-}
-
 .username-form-container {
+  display: flex;
   height: 100%;
   width: 100%;
-  display: none;
   justify-content: center;
   align-items: center;
 }
@@ -296,7 +279,7 @@ body {
 }
 
 .pending-invites {
-  display: none;
+  display: flex;
   flex-direction: column;
   width: 100%;
   max-height: 125px;
@@ -319,7 +302,7 @@ body {
 }
 
 .players-online {
-  display: none;
+  display: flex;
   flex-direction: column;
   width: 100%;
   flex-grow: 1;
@@ -458,16 +441,8 @@ body {
   opacity: 1;
 }
 
-.tic-tac-toe-game.multiplayer .game-mode {
-  display: none;
-}
-
-.tic-tac-toe-game.multiplayer .multiplayer-options {
-  display: flex;
-}
-
 .multiplayer-options {
-  display: none;
+  display: flex;
   justify-content: space-around;
   align-items: center;
 }
@@ -552,12 +527,11 @@ body {
   opacity: 1;
 }
 
-.multiplayer-game-settings.show~.multiplayer-options #settings-btn .options-icon {
+.multiplayer-game-settings .multiplayer-options #settings-btn .options-icon {
   background-image: url("./assets/icons/tic-tac-toe.png");
 }
 
 .multiplayer-game-settings {
-  display: none;
   flex-direction: column;
   position: absolute;
   top: 0;
@@ -567,10 +541,6 @@ body {
   box-shadow: 0px 0px 15px 3px #43A6C6;
   padding: 20px;
   z-index: 2;
-}
-
-.multiplayer-game-settings.show {
-  display: flex;
 }
 
 .multiplayer-game-settings .settings>* {

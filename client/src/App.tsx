@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 // import { io, Socket } from 'socket.io-client';
 import './App.css';
-import MultiplayerMenu from './components/MultiplayerMenu';
 import SinglePlayer from './components/SinglePlayer';
+import EnterMultiplayer from './components/EnterMultiplayer';
 
 // const HEROKU_BACKEND = 'https://lit-citadel-75107.herokuapp.com/';
 // const LOCAL_BACKEND = 'http://localhost:8080';
@@ -20,7 +20,7 @@ const getBoard = (
     case 'single':
       return <SinglePlayer setGameMode={setGameMode} />;
     case 'multi':
-      return <MultiplayerMenu setGameMode={setGameMode} />;
+      return <EnterMultiplayer setGameMode={setGameMode} />;
     case 'ai':
       alert('Not yet implemented');
       return <SinglePlayer setGameMode={setGameMode} />;

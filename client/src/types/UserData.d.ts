@@ -1,8 +1,27 @@
-type SessionData = {
-  socketID: string;
-  username: string;
-  invited: boolean;
-  wasInvited: boolean;
+type SearchParams = {
+  matchTime: {
+    value: number;
+    strict: boolean;
+  };
+  breakTime: {
+    value: number;
+    strict: boolean;
+  };
+};
+
+// type SessionData = {
+//   socketID: string;
+//   username: string;
+//   invited: boolean;
+//   wasInvited: boolean;
+// };
+
+type SessionsData = {
+  [socketID: string]: {
+    username: string;
+    invited: boolean;
+    wasInvited: boolean;
+  };
 };
 
 interface Players {

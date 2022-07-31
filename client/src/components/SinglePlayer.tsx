@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import GameBoard from './GameBoard';
+import capitalize from '../utilities/capitalize';
 
 type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
 
@@ -98,7 +99,3 @@ const checkWin = (currentMove: string, cellsMarks: string[]) => {
 };
 
 const checkDraw = (cellsMarks: string[]) => cellsMarks.every((mark) => mark);
-
-const capitalize = (string: string) => {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-};
