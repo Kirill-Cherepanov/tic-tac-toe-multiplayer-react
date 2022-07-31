@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "postinstall": "tsc",
-    "watch-node": "nodemon dist/app.js",
+    "watch-node": "nodemon -e js dist/app",
     "watch-ts": "tsc -w"
   },
   "keywords": [

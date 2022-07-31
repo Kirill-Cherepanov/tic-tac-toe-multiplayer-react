@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
     },
   }
 
-  ON: enter - accepts search parameters (which are fetched from local storage on client side). Checks whether given usename already exists in the database and sends responce based on that:
+  ON: enter - accepts username. Checks whether given username already exists in the database and sends responce based on that:
   EMIT: enterSuccess - the nickname isn't already in the db
   EMIT: enterFailure - the nickname is already in the db
   Than saves search params, updates the db and initiates searchUpdate based on them.

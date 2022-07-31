@@ -1,7 +1,7 @@
 interface ServerToClientEvents {
   enterSuccess: () => void;
   enterFailure: (message: string) => void;
-  searchUpdate: (sessionData: SessionData[]) => void;
+  searchUpdate: (sessionsData: SessionsData) => void;
   openRoom: (breakTime: number, opponent: string) => void;
 
   opponentReady: () => void;
