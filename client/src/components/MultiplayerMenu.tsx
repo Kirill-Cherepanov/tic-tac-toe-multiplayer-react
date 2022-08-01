@@ -89,6 +89,7 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
 
               return (
                 <div
+                  key={socketID}
                   className={
                     'multiplayer-session ' + session.wasInvited
                       ? 'active'
@@ -140,7 +141,7 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
               const session = sessions[socketID];
 
               return (
-                <div className="multiplayer-session ">
+                <div key={socketID} className="multiplayer-session ">
                   <span className="multiplayer-nickname">
                     {session.username}
                   </span>

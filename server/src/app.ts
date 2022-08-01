@@ -3,15 +3,18 @@ import fs from 'fs/promises';
 import Timer from './Timer';
 import http from 'http';
 
+import { deleteFromArray } from './Utils';
+
 import {
   updateDb,
   readDb,
   searchUpdater,
   updateUser,
-  deleteUser,
+  deleteFromSearch,
   isUserInSearch,
-  isUserInGame
-} from './Utilities';
+  isUserInGame,
+  areSearchParamsCompatible
+} from './DbManipulation';
 
 const httpServer = http.createServer();
 
@@ -46,11 +49,75 @@ io.on('connection', (socket) => {
     }
     socket.emit('enterSuccess');
 
-    const timer = new Timer();
+    // const timer = new Timer();
 
     socket.on('changeSearchParams', async (searchParams) => {
-      updateUser(await readDb(), socket.id, username, searchParams);
+      const dbData = await readDb();
+      updateUser(dbData, socket.id, username, searchParams);
+      await updateDb(dbData);
       searchUpdater(socket, searchParams, UPDATE_SESSION_TIME);
+    });
+
+    socket.on('leaveSearch', async () => {
+      const dbData = await readDb();
+      deleteFromSearch(dbData, socket.id);
+    });
+
+    socket.on('invite', async (invitee) => {
+      const dbData = await readDb();
+      if (
+        !isUserInSearch(dbData, invitee) ||
+        !areSearchParamsCompatible(
+          dbData.players[socket.id].searchParams,
+          dbData.players[invitee].searchParams
+        )
+      ) {
+        return;
+      }
+
+      // These checks might be redundant but better safe than sorry imo
+      if (!dbData.players[socket.id].invited.includes(invitee)) {
+        dbData.players[socket.id].invited.push(invitee);
+      }
+      if (!dbData.players[socket.id].invited.includes(invitee)) {
+        dbData.players[invitee].wasInvited.push(socket.id);
+      }
+    });
+
+    socket.on('cancelInvite', async (inviter, wasInvited) => {
+      const dbData = await readDb();
+      if (!isUserInSearch(dbData, inviter)) return;
+
+      if (wasInvited) {
+        deleteFromArray(dbData.players[socket.id].invited, inviter);
+        deleteFromArray(dbData.players[inviter].wasInvited, socket.id);
+      } else {
+        deleteFromArray(dbData.players[socket.id].wasInvited, inviter);
+        deleteFromArray(dbData.players[inviter].invited, socket.id);
+      }
+
+      updateDb(dbData);
+    });
+
+    socket.on('acceptInvite', async (inviter) => {
+      const dbData = await readDb();
+      if (!isUserInSearch(dbData, inviter)) return;
+      if (!dbData.players[inviter].wasInvited.includes(socket.id)) return;
+
+      const room = {
+        players: {
+          [socket.id]: dbData.players[socket.id].username,
+          [inviter]: dbData.players[inviter].username
+        },
+        currentGame: Array(9).fill(null) as BoardMoves
+      };
+    });
+
+    socket.on('disconnect', async () => {
+      const dbData = await readDb();
+      deleteFromSearch(dbData, socket.id);
+      // if (userInGame) cancelGame();
+      updateDb(dbData);
     });
   });
 });

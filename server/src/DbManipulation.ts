@@ -2,13 +2,19 @@ import fs from 'fs/promises';
 import { Socket } from 'socket.io';
 
 export function updateDb(dbData: DbData): Promise<void> {
-  return fs.writeFile('CurrentPlayers.json', JSON.stringify(dbData));
+  return fs.writeFile('dist/CurrentPlayers.json', JSON.stringify(dbData));
 }
 
 export async function readDb(): Promise<DbData> {
-  return <DbData>(
-    JSON.parse((await fs.readFile('CurrentPlayers.json')).toString('utf-8'))
-  );
+  try {
+    const dbJson = (await fs.readFile('dist/CurrentPlayers.json')).toString(
+      'utf-8'
+    );
+    const dbData = <DbData>JSON.parse(dbJson);
+    return dbData;
+  } catch (e) {
+    throw 'Error in readDb:\n' + e;
+  }
 }
 
 export function areSearchParamsCompatible(
@@ -36,7 +42,7 @@ export function updateUser(
   searchParams: SearchParams
 ): void {
   const prevData: PlayerData = JSON.parse(
-    JSON.stringify(dbData.players[socketID])
+    JSON.stringify(dbData.players[socketID]) || 'null'
   );
   dbData.players[socketID] = {
     username: username,
@@ -45,7 +51,7 @@ export function updateUser(
     searchParams
   };
 
-  if (prevData === undefined) return;
+  if (prevData === null) return;
 
   prevData.wasInvited.forEach((inviter) => {
     if (
@@ -101,7 +107,7 @@ type SearchUpdater = (
 ) => void;
 
 export const searchUpdater: SearchUpdater = (() => {
-  let current_id = 0;
+  let currentId = 0;
 
   const searchUpdate: SearchUpdate = async (
     id,
@@ -130,20 +136,21 @@ export const searchUpdater: SearchUpdater = (() => {
     socket.emit('searchUpdate', sessionsData);
 
     setTimeout(() => {
-      if (id !== current_id) return;
+      if (id !== currentId) return;
       searchUpdate(id, socket, searchParams, UPDATE_SESSION_TIME);
     }, UPDATE_SESSION_TIME);
   };
 
   return (socket, searchParams, UPDATE_SESSION_TIME) => {
-    searchUpdate(current_id++, socket, searchParams, UPDATE_SESSION_TIME);
+    searchUpdate(++currentId, socket, searchParams, UPDATE_SESSION_TIME);
   };
 })();
 
-export function deleteUser(dbData: DbData, socketID: string): void {
+export function deleteFromSearch(dbData: DbData, socketID: string): void {
   if (dbData.players[socketID] === undefined) {
-    const errorMessage = `Can not delete the user ${socketID}.\nThere is no such user in\n${dbData.players}!`;
-    throw Error(errorMessage);
+    return;
+    // const errorMessage = `Can not delete the user ${socketID}.\nThere is no such user in\n${dbData.players}!`;
+    // throw Error(errorMessage);
   }
 
   for (let invited of dbData.players[socketID].invited) {
