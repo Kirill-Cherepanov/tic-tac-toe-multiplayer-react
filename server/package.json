@@ -2,7 +2,7 @@
   "name": "tic-tac-toe-online-react-server",
   "version": "1.0.0",
   "description": "Backend of tic-tac-toe online",
-  "main": "index.js",
+  "main": "app.js",
   "engines": {
     "node": "17.8.0"
   },

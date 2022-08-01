@@ -24,13 +24,16 @@ type SessionsData = {
   };
 };
 
-interface Players {
-  [socketID: string]: {
-    username: string;
-    invited: string[];
-    wasInvited: string[];
-  };
-}
+type PlayerData = {
+  username: string;
+  invited: string[];
+  wasInvited: string[];
+  searchParams: SearchParams;
+};
+
+type Players = {
+  [socketID: string]: PlayerData;
+};
 
 type BoardMoves = [
   string,
@@ -44,16 +47,16 @@ type BoardMoves = [
   string
 ];
 
-interface Games {
+type Games = {
   [socketID: string]: {
     players: {
       [socketID: string]: string;
     };
     currentGame: BoardMoves;
   };
-}
+};
 
-interface DbData {
+type DbData = {
   players: Players;
   games: Games;
-}
+};
