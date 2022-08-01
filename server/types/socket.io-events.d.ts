@@ -15,10 +15,7 @@ interface ServerToClientEvents {
 interface ClientToServerEvents {
   enter: (username: string) => void;
   leaveSearch: () => void;
-  changeSearchParams: (searchParams: {
-    matchTime: { value: number; strict: boolean };
-    breakTime: { value: number; strict: boolean };
-  }) => void;
+  changeSearchParams: (searchParams: SearchParams) => void;
 
   invite: (invited: string) => void; // Here we send socketID of the invited
   cancelInvite: (inviter: string, wasInvited: boolean) => void;

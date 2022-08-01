@@ -34,37 +34,20 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
     useState<MultiPlayerProps | null>(null);
 
   useEffect(() => {
-    setSocket(
-      io(LOCAL_BACKEND) as Socket<ServerToClientEvents, ClientToServerEvents>
-    );
-  }, []);
-
-  useEffect(() => {
-    socket?.on('openRoom', (breakTime, matchTime, opponent) => {
-      setMultiplayerProps({
-        breakTime,
-        matchTime,
-        opponent,
-        leaveGame: () => {
-          socket.emit('leaveGame');
-          setIsInGame(false);
-          setIsInSearch(true); // DELETE IF SOMETHING DOESN'T WORK
-        },
-        socket
-      });
-      setIsInGame(true);
-      setIsInSearch(false);
-    });
-
     return () => {
       socket?.disconnect();
     };
   }, [socket]);
 
   useEffect(() => {
-    if (username === '') return;
+    setSocket(
+      io(LOCAL_BACKEND) as Socket<ServerToClientEvents, ClientToServerEvents>
+    );
+  }, []);
 
-    socket?.emit('enter', username);
+  useEffect(() => {
+    socket?.off('enterFailure');
+    socket?.off('enterSuccess');
 
     socket?.on('enterFailure', (message) => {
       setErrorMessage(message);
@@ -73,6 +56,31 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
     socket?.on('enterSuccess', () => {
       setIsInSearch(true);
       setErrorMessage('');
+    });
+
+    return () => {
+      socket?.off('enterFailure');
+      socket?.off('enterSuccess');
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.off('openRoom');
+
+    socket?.on('openRoom', (breakTime, matchTime, opponent) => {
+      setMultiplayerProps({
+        breakTime,
+        matchTime,
+        opponent,
+        leaveGame: () => {
+          socket.emit('leaveGame');
+          socket.emit('enter', username);
+          setIsInGame(false);
+        },
+        socket
+      });
+      setIsInGame(true);
+      setIsInSearch(false);
     });
   }, [socket, username]);
 
@@ -95,6 +103,10 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
             onSubmit={(e) => {
               e.preventDefault();
 
+              if (username === '') return;
+
+              socket?.emit('enter', username);
+
               setUsername(
                 (e.currentTarget.elements as UsernameFormElements).username
                   .value
@@ -104,7 +116,13 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
             <label htmlFor="username" className="username-label">
               Enter your user name
             </label>
-            <input type="text" name="username" id="username" />
+            <input
+              type="text"
+              name="username"
+              id="username"
+              value={username}
+              onInput={(e) => setUsername(e.currentTarget.value)}
+            />
             <button type="submit" id="submit-username">
               Submit
             </button>

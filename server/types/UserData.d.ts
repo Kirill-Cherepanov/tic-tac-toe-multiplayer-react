@@ -1,20 +1,15 @@
+type Timings = 5 | 10 | 20 | 40 | 0;
+
 type SearchParams = {
   matchTime: {
-    value: number;
+    value: Timings;
     strict: boolean;
   };
   breakTime: {
-    value: number;
+    value: Timings;
     strict: boolean;
   };
 };
-
-// type SessionData = {
-//   socketID: string;
-//   username: string;
-//   invited: boolean;
-//   wasInvited: boolean;
-// };
 
 type SessionsData = {
   [socketID: string]: {
@@ -31,10 +26,6 @@ type PlayerData = {
   searchParams: SearchParams;
 };
 
-type Players = {
-  [socketID: string]: PlayerData;
-};
-
 type BoardMoves = [
   string,
   string,
@@ -47,16 +38,21 @@ type BoardMoves = [
   string
 ];
 
-type Games = {
-  [socketID: string]: {
-    players: {
-      [socketID: string]: string;
-    };
-    currentGame: BoardMoves;
+type GameData = {
+  players: {
+    [socketID: string]: string;
   };
+  currentGame: BoardMoves;
+  currentMove: 'o' | 'x';
+  matchTime: number;
+  breakTime: number;
 };
 
 type DbData = {
-  players: Players;
-  games: Games;
+  players: {
+    [socketID: string]: PlayerData;
+  };
+  games: {
+    [socketID: string]: GameData;
+  };
 };

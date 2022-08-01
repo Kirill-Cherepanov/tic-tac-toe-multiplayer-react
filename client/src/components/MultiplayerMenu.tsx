@@ -32,6 +32,8 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
   }, [searchParams, socket]);
 
   useEffect(() => {
+    socket?.off('searchUpdate');
+
     socket.on('searchUpdate', (sessionsData) => {
       console.log('update search');
       setSessions(sessionsData);

@@ -32,7 +32,7 @@ ON: invite - accepts nickname of the invited player, checks if such a player exi
 ON: cancelInvite - accepts nickname of who's the invite being canceled (invitee) on, and whether socket is the inviter or invited. Checks whether the invitee is in the database and updates the db.
 
 ON: acceptInvite - accepts nickname of the inviter, checks if the inviter is in the database, checks if the inviter has actually send the invite and if so creates a room (in socket.io making a room is unnecessary, we only need to change it in the db) with both players, then:
-EMIT: openRoom - sends break time and opponent's nickname to both players.
+EMIT: openRoom - sends break time, match time and opponent's nickname to both players.
 Then pause(), deletes both usernames from 'Search' branch in the db (send them to 'ActiveGames' branch as a room), updates the db, declares timer and assigns it to global variable.
 
 

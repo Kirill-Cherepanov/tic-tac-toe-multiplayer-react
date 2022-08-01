@@ -1,19 +1,18 @@
 import { Server, Socket } from 'socket.io';
-import fs from 'fs/promises';
 import Timer from './Timer';
 import http from 'http';
+import dbData from './CurrentPlayers';
 
 import { deleteFromArray } from './Utils';
 
 import {
-  updateDb,
-  readDb,
-  searchUpdater,
+  getSearchUpdater,
   updateUser,
   deleteFromSearch,
   isUserInSearch,
   isUserInGame,
-  areSearchParamsCompatible
+  areSearchParamsCompatible,
+  calculateGameParams
 } from './DbManipulation';
 
 const httpServer = http.createServer();
@@ -39,32 +38,33 @@ const io = new Server<
   }
 });
 
-const UPDATE_SESSION_TIME = 1000;
+const UPDATE_SEARCH_TIME = 1000;
+
+const timers: {
+  [sockedID: string]: Timer;
+} = {};
 
 io.on('connection', (socket) => {
-  socket.on('enter', async (username) => {
-    if (isUserInSearch(await readDb(), socket.id, username)) {
+  const searchUpdater = getSearchUpdater();
+
+  socket.on('enter', (username) => {
+    if (isUserInSearch(dbData, socket.id, username)) {
       socket.emit('enterFailure', 'username already exists');
       return;
     }
+    console.log(username);
     socket.emit('enterSuccess');
 
-    // const timer = new Timer();
-
-    socket.on('changeSearchParams', async (searchParams) => {
-      const dbData = await readDb();
+    socket.on('changeSearchParams', (searchParams) => {
       updateUser(dbData, socket.id, username, searchParams);
-      await updateDb(dbData);
-      searchUpdater(socket, searchParams, UPDATE_SESSION_TIME);
+      searchUpdater(socket, dbData, searchParams, UPDATE_SEARCH_TIME);
     });
 
-    socket.on('leaveSearch', async () => {
-      const dbData = await readDb();
+    socket.on('leaveSearch', () => {
       deleteFromSearch(dbData, socket.id);
     });
 
-    socket.on('invite', async (invitee) => {
-      const dbData = await readDb();
+    socket.on('invite', (invitee) => {
       if (
         !isUserInSearch(dbData, invitee) ||
         !areSearchParamsCompatible(
@@ -84,8 +84,7 @@ io.on('connection', (socket) => {
       }
     });
 
-    socket.on('cancelInvite', async (inviter, wasInvited) => {
-      const dbData = await readDb();
+    socket.on('cancelInvite', (inviter, wasInvited) => {
       if (!isUserInSearch(dbData, inviter)) return;
 
       if (wasInvited) {
@@ -95,29 +94,58 @@ io.on('connection', (socket) => {
         deleteFromArray(dbData.players[socket.id].wasInvited, inviter);
         deleteFromArray(dbData.players[inviter].invited, socket.id);
       }
-
-      updateDb(dbData);
     });
 
-    socket.on('acceptInvite', async (inviter) => {
-      const dbData = await readDb();
+    socket.on('acceptInvite', (inviter) => {
       if (!isUserInSearch(dbData, inviter)) return;
       if (!dbData.players[inviter].wasInvited.includes(socket.id)) return;
 
-      const room = {
+      const { breakTime, matchTime } = calculateGameParams(
+        dbData.players[socket.id].searchParams,
+        dbData.players[inviter].searchParams
+      );
+
+      const room: GameData = {
         players: {
           [socket.id]: dbData.players[socket.id].username,
           [inviter]: dbData.players[inviter].username
         },
-        currentGame: Array(9).fill(null) as BoardMoves
+        currentGame: Array(9).fill(null) as BoardMoves,
+        currentMove: 'o',
+        breakTime,
+        matchTime
       };
+      dbData.games[inviter] = room;
+
+      deleteFromSearch(dbData, inviter);
+      deleteFromSearch(dbData, socket.id);
+
+      io.to(socket.id).emit(
+        'openRoom',
+        breakTime,
+        matchTime,
+        dbData.players[inviter].username
+      );
+
+      io.to(inviter).emit(
+        'openRoom',
+        breakTime,
+        matchTime,
+        dbData.players[socket.id].username
+      );
+
+      timers[socket.id] = new Timer();
+      timers[inviter] = new Timer();
+      timers[socket.id].start(breakTime, () => {
+        socket.emit('dismissGame', 'Ran out of break time');
+        io.to(inviter).emit('dismissGame', 'Ran out of break time');
+        delete dbData.games[inviter];
+      });
     });
 
-    socket.on('disconnect', async () => {
-      const dbData = await readDb();
+    socket.on('disconnect', () => {
       deleteFromSearch(dbData, socket.id);
       // if (userInGame) cancelGame();
-      updateDb(dbData);
     });
   });
 });
