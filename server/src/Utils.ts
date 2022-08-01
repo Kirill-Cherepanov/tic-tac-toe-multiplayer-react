@@ -1,3 +1,3 @@
-export function deleteFromArray<T>(arr: T[], deleteEl: T): void {
-  arr = arr.filter((element) => element !== deleteEl);
+export function deleteFromArray<T>(arr: T[], deleteEl: T): T[] {
+  return arr.filter((element) => element !== deleteEl);
 }

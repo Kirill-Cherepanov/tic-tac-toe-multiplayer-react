@@ -15,78 +15,88 @@ export default function SearchSettings({ searchParamsState, goBack }: Props) {
       <div className="multiplayer-game-settings">
         <h2 className="title-game-settings">Settings</h2>
         <form className="settings" data-settings>
-          <label htmlFor="player-move-time" className="player-move-time-label">
+          <label htmlFor="player-move-time" className="time-setting">
             Match time:
             <select
               name="player-move-time"
               id="player-move-time"
+              className="time-select"
               onChange={(e) => {
+                const target = e.currentTarget;
                 setSearchParams((searchParams) => {
                   const newMatchTime = { ...searchParams.matchTime };
-                  newMatchTime.value = Number(e.currentTarget.value);
+                  newMatchTime.value = Number(target.value);
                   return { ...searchParams, ...{ matchTime: newMatchTime } };
                 });
               }}
               value={searchParams.matchTime.value}
             >
-              <option value={5}>10 sec</option>
-              <option value={10}>20 sec</option>
-              <option value={20}>30 sec</option>
-              <option value={40}>60 sec</option>
-              <option value={0}>Unlimited</option>
+              <option value={5}>10</option>
+              <option value={10}>20</option>
+              <option value={20}>30</option>
+              <option value={40}>60</option>
+              <option value={0}>∞</option>
             </select>
+            seconds
           </label>
-          <label htmlFor="match-time-strict">
+          <label htmlFor="match-time-strict" className="strict-setting">
             <input
               type="checkbox"
-              className="match-time-strict"
+              className="strict-input"
               id="match-time-strict"
               onChange={(e) => {
+                const target = e.currentTarget;
                 setSearchParams((searchParams) => {
                   const newMatchTime = { ...searchParams.matchTime };
-                  newMatchTime.strict = e.currentTarget.checked;
+                  newMatchTime.strict = target.checked;
                   return { ...searchParams, ...{ matchTime: newMatchTime } };
                 });
               }}
               checked={searchParams.matchTime.strict}
             />
+            strict search
           </label>
 
-          <label htmlFor="timeout-time" className="timeout-label">
+          <label htmlFor="timeout-time" className="time-setting">
             Break time:
             <select
               name="timeout-time"
               id="timeout-time"
+              className="time-select"
               onChange={(e) => {
+                const target = e.currentTarget;
                 setSearchParams((searchParams) => {
                   const newBreakTime = { ...searchParams.breakTime };
-                  newBreakTime.value = Number(e.currentTarget.value);
+                  newBreakTime.value = Number(target.value);
                   return { ...searchParams, ...{ breakTime: newBreakTime } };
                 });
               }}
               value={searchParams.breakTime.value}
             >
-              <option value={5}>10 sec</option>
-              <option value={10}>20 sec</option>
-              <option value={20}>30 sec</option>
-              <option value={40}>60 sec</option>
-              <option value={0}>Unlimited</option>
+              <option value={5}>10</option>
+              <option value={10}>20</option>
+              <option value={20}>30</option>
+              <option value={40}>60</option>
+              <option value={0}>∞</option>
             </select>
+            seconds
           </label>
-          <label htmlFor="break-time-strict">
+          <label htmlFor="break-time-strict" className="strict-setting">
             <input
               type="checkbox"
-              className="break-time-strict"
+              className="strict-input"
               id="break-time-strict"
               onChange={(e) => {
+                const target = e.currentTarget;
                 setSearchParams((searchParams) => {
                   const newBreakTime = { ...searchParams.breakTime };
-                  newBreakTime.strict = e.currentTarget.checked;
+                  newBreakTime.strict = target.checked;
                   return { ...searchParams, ...{ breakTime: newBreakTime } };
                 });
               }}
               checked={searchParams.breakTime.strict}
             />
+            strict search
           </label>
         </form>
       </div>

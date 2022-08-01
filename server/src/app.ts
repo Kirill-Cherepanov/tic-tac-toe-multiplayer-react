@@ -86,18 +86,24 @@ io.on('connection', (socket) => {
     socket.on('cancelInvite', (inviter, wasInvited) => {
       if (!isUserInSearch(dbData, inviter)) return;
 
+      const socketData = dbData.players[socket.id];
+      const inviterData = dbData.players[inviter];
+
       if (wasInvited) {
-        deleteFromArray(dbData.players[socket.id].invited, inviter);
-        deleteFromArray(dbData.players[inviter].wasInvited, socket.id);
+        socketData.invited = deleteFromArray(socketData.invited, inviter);
+        inviterData.wasInvited = deleteFromArray(
+          inviterData.wasInvited,
+          socket.id
+        );
       } else {
-        deleteFromArray(dbData.players[socket.id].wasInvited, inviter);
-        deleteFromArray(dbData.players[inviter].invited, socket.id);
+        socketData.wasInvited = deleteFromArray(socketData.wasInvited, inviter);
+        inviterData.invited = deleteFromArray(inviterData.invited, socket.id);
       }
     });
 
     socket.on('acceptInvite', (inviter) => {
       if (!isUserInSearch(dbData, inviter)) return;
-      if (!dbData.players[inviter].wasInvited.includes(socket.id)) return;
+      if (!dbData.players[inviter].invited.includes(socket.id)) return;
 
       const { breakTime, matchTime } = calculateGameParams(
         dbData.players[socket.id].searchParams,

@@ -100,7 +100,7 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
                       });
                     }}
                   />
-                  {session.invited ? null : (
+                  {session.wasInvited ? null : (
                     <i
                       tabIndex={2}
                       className="accept-icon session-icon"
