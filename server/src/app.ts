@@ -1,4 +1,4 @@
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import Timer from './Timer';
 import http from 'http';
 import dbData from './CurrentPlayers';
@@ -52,7 +52,6 @@ io.on('connection', (socket) => {
       socket.emit('enterFailure', 'username already exists');
       return;
     }
-    console.log(username);
     socket.emit('enterSuccess');
 
     socket.on('changeSearchParams', (searchParams) => {
@@ -79,7 +78,7 @@ io.on('connection', (socket) => {
       if (!dbData.players[socket.id].invited.includes(invitee)) {
         dbData.players[socket.id].invited.push(invitee);
       }
-      if (!dbData.players[socket.id].invited.includes(invitee)) {
+      if (!dbData.players[invitee].wasInvited.includes(socket.id)) {
         dbData.players[invitee].wasInvited.push(socket.id);
       }
     });

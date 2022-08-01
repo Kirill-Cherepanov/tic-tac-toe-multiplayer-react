@@ -35,26 +35,7 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
     socket?.off('searchUpdate');
 
     socket.on('searchUpdate', (sessionsData) => {
-      console.log('update search');
       setSessions(sessionsData);
-
-      // It was in the original code, but I deemed it reduntant
-      // Need to test if it works without this
-      // setSessions((prevSessions) => {
-      //   const newSessions;
-      //   Object.keys(sessionsData).map((socketID) => {
-      //     const prevSession = prevSessions[socketID];
-
-      //     return {
-      //       ...sessionsData[socketID],
-      //       ...{
-      //         wasInvited: prevSession?.wasInvited || false,
-      //         invited: prevSession?.invited || false
-      //       }
-      //     };
-      //   });
-
-      // });
     });
 
     return () => {
@@ -80,28 +61,25 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
   return (
     <>
       <div className="multiplayer-menu" data-multiplayer-menu>
-        <div className="pending-invites">
-          {Object.keys(sessions)
-            .filter(
-              (socketID) =>
-                sessions[socketID].wasInvited || sessions[socketID].invited
-            )
-            .map((socketID) => {
+        {getPendingInvites(sessions).length === 0 ? null : (
+          <div className="pending-invites">
+            {getPendingInvites(sessions).map((socketID) => {
               const session = sessions[socketID];
 
               return (
                 <div
                   key={socketID}
                   className={
-                    'multiplayer-session ' + session.wasInvited
-                      ? 'active'
-                      : 'pending'
+                    'multiplayer-session ' +
+                    (session.wasInvited ? ' active' : ' pending')
                   }
+                  tabIndex={1}
                 >
                   <span className="multiplayer-nickname">
                     {session.username}
                   </span>
                   <i
+                    tabIndex={2}
                     className="cancel-icon session-icon"
                     onClick={() => {
                       socket.emit('cancelInvite', socketID, session.wasInvited);
@@ -122,55 +100,53 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
                       });
                     }}
                   />
-                  <i
-                    className="accept-icon session-icon"
-                    onClick={() => {
-                      socket.emit('acceptInvite', socketID);
-                    }}
-                  ></i>
+                  {session.invited ? null : (
+                    <i
+                      tabIndex={2}
+                      className="accept-icon session-icon"
+                      onClick={() => {
+                        socket.emit('acceptInvite', socketID);
+                      }}
+                    ></i>
+                  )}
                 </div>
               );
             })}
-        </div>
+          </div>
+        )}
 
         <div className="players-online">
-          {Object.keys(sessions)
-            .filter(
-              (socketID) =>
-                !sessions[socketID].wasInvited && !sessions[socketID].invited
-            )
-            .map((socketID) => {
-              const session = sessions[socketID];
+          {getNotPendingInvites(sessions).map((socketID) => {
+            const session = sessions[socketID];
 
-              return (
-                <div key={socketID} className="multiplayer-session ">
-                  <span className="multiplayer-nickname">
-                    {session.username}
-                  </span>
-                  <i
-                    className="accept-icon session-icon"
-                    onClick={() => {
-                      socket.emit('invite', socketID);
+            const invite = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+              e.stopPropagation();
+              socket.emit('invite', socketID);
+              setSessions((sessions) => {
+                return {
+                  ...sessions,
+                  ...{
+                    [socketID]: {
+                      username: sessions[socketID].username,
+                      wasInvited: true,
+                      invited: false
+                    }
+                  }
+                };
+              });
+            };
 
-                      // Updating here and not on searchUpdate to eliminate delay
-                      setSessions((sessions) => {
-                        const session = sessions[socketID];
-                        return {
-                          ...sessions,
-                          ...{
-                            [socketID]: {
-                              username: session.username,
-                              wasInvited: true,
-                              invited: false
-                            }
-                          }
-                        };
-                      });
-                    }}
-                  ></i>
-                </div>
-              );
-            })}
+            return (
+              <div key={socketID} className="multiplayer-session" tabIndex={1}>
+                <span className="multiplayer-nickname">{session.username}</span>
+                <i
+                  className="accept-icon session-icon"
+                  onClick={invite}
+                  tabIndex={2}
+                ></i>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -193,3 +169,15 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
     </>
   );
 }
+
+const getPendingInvites = (sessions: SessionsData) => {
+  return Object.keys(sessions).filter(
+    (socketID) => sessions[socketID].wasInvited || sessions[socketID].invited
+  );
+};
+
+const getNotPendingInvites = (sessions: SessionsData) => {
+  return Object.keys(sessions).filter(
+    (socketID) => !sessions[socketID].wasInvited && !sessions[socketID].invited
+  );
+};

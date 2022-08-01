@@ -138,7 +138,7 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
           return (
             <button
               id={`${mode}-button`}
-              className="game-mode-btn active"
+              className={'game-mode-btn' + (mode === 'multi' ? ' active' : '')}
               key={mode}
               onClick={() => {
                 setGameMode(mode);

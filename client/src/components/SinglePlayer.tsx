@@ -74,7 +74,7 @@ export default function SinglePlayer({ setGameMode }: Props) {
           return (
             <button
               id={`${mode}-button`}
-              className="game-mode-btn active"
+              className={'game-mode-btn' + (mode === 'single' ? ' active' : '')}
               key={mode}
               onClick={() => {
                 setGameMode(mode);
