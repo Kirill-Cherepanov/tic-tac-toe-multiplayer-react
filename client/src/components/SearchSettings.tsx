@@ -31,10 +31,10 @@ export default function SearchSettings({ searchParamsState, goBack }: Props) {
               }}
               value={searchParams.matchTime.value}
             >
-              <option value={5}>10</option>
-              <option value={10}>20</option>
-              <option value={20}>30</option>
-              <option value={40}>60</option>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={40}>40</option>
               <option value={0}>∞</option>
             </select>
             seconds
@@ -73,10 +73,10 @@ export default function SearchSettings({ searchParamsState, goBack }: Props) {
               }}
               value={searchParams.breakTime.value}
             >
-              <option value={5}>10</option>
-              <option value={10}>20</option>
-              <option value={20}>30</option>
-              <option value={40}>60</option>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={40}>40</option>
               <option value={0}>∞</option>
             </select>
             seconds

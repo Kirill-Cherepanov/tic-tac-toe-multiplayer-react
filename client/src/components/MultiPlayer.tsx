@@ -42,7 +42,7 @@ export default function MultiPlayer({
       });
     }
   });
-  const timer = useTimer(breakTime);
+  const [timer, time] = useTimer(breakTime);
 
   const makeMove = useCallback(
     (pos: number) => {
@@ -88,7 +88,7 @@ export default function MultiPlayer({
     });
 
     socket.on('dismissGame', (message) => {
-      timer.pause();
+      timer.setTime(0);
       setEndMessage({
         hidden: false,
         buttonText: 'Leave',
@@ -137,7 +137,9 @@ export default function MultiPlayer({
         </button>
         <div className="multiplayer-game-timer-container">
           <div className="multiplayer-game-timer" data-timer>
-            {Math.ceil(timer.getTime())}
+            {`0${Math.floor(time / 60)}:${Math.ceil(
+              time - Math.floor(time / 60) * 60
+            )}`}
           </div>
         </div>
       </div>

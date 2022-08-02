@@ -54,6 +54,15 @@ io.on('connection', (socket) => {
     }
     socket.emit('enterSuccess');
 
+    [
+      'changeSearchParams',
+      'leaveSearch',
+      'invite',
+      'cancelInvite',
+      'acceptInvite',
+      'disconnect'
+    ].forEach((event) => socket.removeAllListeners(event));
+
     socket.on('changeSearchParams', (searchParams) => {
       updateUser(dbData, socket.id, username, searchParams);
       searchUpdater(socket, dbData, searchParams, UPDATE_SEARCH_TIME);
@@ -125,23 +134,18 @@ io.on('connection', (socket) => {
       deleteFromSearch(dbData, inviter);
       deleteFromSearch(dbData, socket.id);
 
-      io.to(socket.id).emit(
-        'openRoom',
-        breakTime,
-        matchTime,
-        dbData.players[inviter].username
-      );
+      socket.emit('openRoom', breakTime, matchTime, room.players[inviter]);
 
       io.to(inviter).emit(
         'openRoom',
         breakTime,
         matchTime,
-        dbData.players[socket.id].username
+        room.players[socket.id]
       );
 
       timers[socket.id] = new Timer();
       timers[inviter] = new Timer();
-      timers[socket.id].start(breakTime, () => {
+      timers[socket.id].start((breakTime + 1) * 1000, () => {
         socket.emit('dismissGame', 'Ran out of break time');
         io.to(inviter).emit('dismissGame', 'Ran out of break time');
         delete dbData.games[inviter];

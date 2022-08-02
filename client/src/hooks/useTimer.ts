@@ -1,7 +1,15 @@
 import { useRef, useState } from 'react';
 
-export default function useTimer(initialTime: number) {
+type Timer = {
+  setTime: (newTime: number) => void;
+  resume: () => void;
+  pause: () => void;
+};
+
+export default function useTimer(initialTime: number): [Timer, number] {
   const [time, setTime] = useState(initialTime);
+  const [startTime, setStartTime] = useState<number | null>(Date.now());
+  const [maxTime, setMaxTime] = useState(initialTime);
 
   const timer = useRef(
     (() => {
@@ -10,30 +18,51 @@ export default function useTimer(initialTime: number) {
 
         return (newTime: number) => {
           if (intervalID) clearInterval(intervalID);
-          if (newTime < 0) return;
 
+          // Handle pause()
+          if (newTime < 0) {
+            if (startTime === null) return;
+            setTime((time) => maxTime - (Date.now() - startTime!) / 1000);
+            setStartTime(null);
+            return;
+          }
+
+          // Handle time reset
+          if (newTime === 0) {
+            setMaxTime(0);
+            setTime(0);
+            setStartTime(null);
+            return;
+          }
+
+          // Handle resume()
+          if (newTime === Infinity) newTime = time;
+          setMaxTime(newTime);
+          setTime(newTime);
+          setStartTime(Date.now());
+
+          // Handle time update
           intervalID = setInterval(() => {
             setTime((time) => {
-              if (newTime === Infinity) newTime = time;
-              if (time <= 0) {
+              if (time - 1 <= 0) {
                 clearInterval(intervalID);
-                return time;
+                setMaxTime(0);
+                setStartTime(null);
+                return 0;
               }
-              return time - 0.1;
+              return maxTime - (Date.now() - startTime!) / 1000;
             });
-          }, 100);
-          setTime(newTime);
+          }, 1000);
         };
       })();
 
       return {
         setTime: updateTime,
         resume: () => updateTime(Infinity),
-        pause: () => updateTime(-1),
-        getTime: () => time
+        pause: () => updateTime(-1)
       };
     })()
   );
 
-  return timer.current;
+  return [timer.current, time];
 }

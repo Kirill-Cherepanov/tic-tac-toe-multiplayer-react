@@ -227,33 +227,22 @@ export function calculateGameParams(
   params1: SearchParams,
   params2: SearchParams
 ) {
-  const TIMINGS = [5, 10, 20, 40, 60];
+  const calcTimeValue = (value1: number, value2: number) => {
+    if (value1 === 0 && value2 === 0) return 100000;
 
-  let breakTime: number;
-  if (params1.breakTime.value === 0 && params2.breakTime.value === 0) {
-    breakTime = 0;
-  } else if (params1.breakTime.value === 0 || params2.breakTime.value === 0) {
-    breakTime =
-      TIMINGS[
-        Math.floor(
-          TIMINGS.indexOf(params1.breakTime.value) +
-            TIMINGS.indexOf(params1.breakTime.value)
-        )
-      ];
-  } else breakTime = params1.breakTime.value + params2.breakTime.value / 2;
+    // So basically if one of timings is unlimited - i.e. 0 - and the other one isn't
+    // then we treat unlimited as 60 in calculations
+    return Math.ceil(((value1 || 60) + (value2 || 60)) / 2);
+  };
 
-  let matchTime: number;
-  if (params1.matchTime.value === 0 && params2.matchTime.value === 0) {
-    matchTime = 0;
-  } else if (params1.matchTime.value === 0 || params2.matchTime.value === 0) {
-    matchTime =
-      TIMINGS[
-        Math.floor(
-          TIMINGS.indexOf(params1.matchTime.value) +
-            TIMINGS.indexOf(params1.matchTime.value)
-        )
-      ];
-  } else matchTime = params1.matchTime.value + params2.matchTime.value / 2;
+  const breakTime: number = calcTimeValue(
+    params1.breakTime.value,
+    params2.breakTime.value
+  );
+  const matchTime: number = calcTimeValue(
+    params1.matchTime.value,
+    params2.matchTime.value
+  );
 
   return { breakTime, matchTime };
 }
