@@ -20,19 +20,14 @@ export default class Timer {
   }
 
   reset() {
-    if (this.timer === undefined)
+    if (this.timer === undefined) {
       throw Error('Can not reset the timer. Timer was not set!');
+    }
 
     clearInterval(this.timer);
     this.timer = undefined;
     this._time = 0;
     this._maxTime = 0;
-  }
-
-  restart() {
-    const prevTime = this._maxTime;
-    this.reset();
-    this.start(prevTime, this.callback);
   }
 
   start(maxTime: number, callback: Function) {
@@ -51,5 +46,19 @@ export default class Timer {
     const timeLeft = this._maxTime - this._time;
     this.reset();
     if (timeLeft + addTime >= 0) this.start(timeLeft + addTime, this.callback);
+  }
+
+  pause() {
+    clearInterval(this.timer);
+    this.timer = undefined;
+    this._maxTime = this._maxTime - this._time;
+    this._time = 0;
+  }
+
+  resume() {
+    if (this.timer !== undefined) {
+      throw Error('Can not resume the timer. Timer was not stopped!');
+    }
+    this.start(this._maxTime, this.callback);
   }
 }

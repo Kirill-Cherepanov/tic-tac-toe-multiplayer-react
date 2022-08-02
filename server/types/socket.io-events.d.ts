@@ -8,7 +8,7 @@ interface ServerToClientEvents {
   startGame: (isFirstMove: boolean) => void;
 
   opponentMove: (position: number) => void;
-  gameOver: (winner: string) => void;
+  gameOver: (winner: string, message?: string) => void;
   dismissGame: (message: string) => void;
 }
 

@@ -1,4 +1,4 @@
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import Timer from './Timer';
 import http from 'http';
 import dbData from './CurrentPlayers';
@@ -10,10 +10,10 @@ import {
   updateUser,
   deleteFromSearch,
   isUserInSearch,
-  isUserInGame,
   areSearchParamsCompatible,
   calculateGameParams,
-  getGameData
+  getGameData,
+  checkMove
 } from './DbManipulation';
 
 const httpServer = http.createServer();
@@ -42,7 +42,7 @@ const io = new Server<
 const UPDATE_SEARCH_TIME = 1000;
 
 const timers: {
-  [sockedID: string]: Timer;
+  [socketID: string]: Timer;
 } = {};
 
 io.on('connection', (socket) => {
@@ -55,171 +55,137 @@ io.on('connection', (socket) => {
     }
     socket.emit('enterSuccess');
 
-    [
-      'changeSearchParams',
-      'leaveSearch',
-      'invite',
-      'cancelInvite',
-      'acceptInvite',
-      'leaveGame',
-      'ready',
-      'move',
-      'disconnect'
-    ].forEach((event) => socket.removeAllListeners(event));
+    socket.removeAllListeners('changeSearchParams');
 
     socket.on('changeSearchParams', (searchParams) => {
       updateUser(dbData, socket.id, username, searchParams);
       searchUpdater(socket, dbData, searchParams, UPDATE_SEARCH_TIME);
     });
+  });
 
-    socket.on('leaveSearch', () => {
-      deleteFromSearch(dbData, socket.id);
-    });
+  socket.on('leaveSearch', () => {
+    deleteFromSearch(dbData, socket.id);
+  });
 
-    socket.on('invite', (invitee) => {
-      if (
-        !isUserInSearch(dbData, invitee) ||
-        !areSearchParamsCompatible(
-          dbData.players[socket.id].searchParams,
-          dbData.players[invitee].searchParams
-        )
-      ) {
-        return;
-      }
-
-      // These checks might be redundant but better safe than sorry imo
-      if (!dbData.players[socket.id].invited.includes(invitee)) {
-        dbData.players[socket.id].invited.push(invitee);
-      }
-      if (!dbData.players[invitee].wasInvited.includes(socket.id)) {
-        dbData.players[invitee].wasInvited.push(socket.id);
-      }
-    });
-
-    socket.on('cancelInvite', (inviter, wasInvited) => {
-      if (!isUserInSearch(dbData, inviter)) return;
-
-      const socketData = dbData.players[socket.id];
-      const inviterData = dbData.players[inviter];
-
-      if (wasInvited) {
-        socketData.invited = deleteFromArray(socketData.invited, inviter);
-        inviterData.wasInvited = deleteFromArray(
-          inviterData.wasInvited,
-          socket.id
-        );
-      } else {
-        socketData.wasInvited = deleteFromArray(socketData.wasInvited, inviter);
-        inviterData.invited = deleteFromArray(inviterData.invited, socket.id);
-      }
-    });
-
-    socket.on('acceptInvite', (inviter) => {
-      if (!isUserInSearch(dbData, inviter)) return;
-      if (!dbData.players[inviter].invited.includes(socket.id)) return;
-
-      const { breakTime, matchTime } = calculateGameParams(
+  socket.on('invite', (invitee) => {
+    if (
+      !isUserInSearch(dbData, invitee) ||
+      !areSearchParamsCompatible(
         dbData.players[socket.id].searchParams,
-        dbData.players[inviter].searchParams
+        dbData.players[invitee].searchParams
+      )
+    ) {
+      return;
+    }
+
+    // These checks might be redundant but better safe than sorry imo
+    if (!dbData.players[socket.id].invited.includes(invitee)) {
+      dbData.players[socket.id].invited.push(invitee);
+    }
+    if (!dbData.players[invitee].wasInvited.includes(socket.id)) {
+      dbData.players[invitee].wasInvited.push(socket.id);
+    }
+  });
+
+  socket.on('cancelInvite', (inviter, wasInvited) => {
+    if (!isUserInSearch(dbData, inviter)) return;
+
+    const socketData = dbData.players[socket.id];
+    const inviterData = dbData.players[inviter];
+
+    if (wasInvited) {
+      socketData.invited = deleteFromArray(socketData.invited, inviter);
+      inviterData.wasInvited = deleteFromArray(
+        inviterData.wasInvited,
+        socket.id
       );
+    } else {
+      socketData.wasInvited = deleteFromArray(socketData.wasInvited, inviter);
+      inviterData.invited = deleteFromArray(inviterData.invited, socket.id);
+    }
+  });
 
-      const room: GameData = {
-        players: {
-          [socket.id]: dbData.players[socket.id].username,
-          [inviter]: dbData.players[inviter].username
-        },
-        currentGame: Array(9).fill(null) as BoardMoves,
-        currentMove: 'o',
-        breakTime,
-        matchTime
-      };
-      dbData.games[inviter] = room;
+  socket.on('acceptInvite', (inviter) => {
+    if (!isUserInSearch(dbData, inviter)) return;
+    if (!dbData.players[inviter].invited.includes(socket.id)) return;
 
-      deleteFromSearch(dbData, inviter);
-      deleteFromSearch(dbData, socket.id);
+    const { breakTime, matchTime } = calculateGameParams(
+      dbData.players[socket.id].searchParams,
+      dbData.players[inviter].searchParams
+    );
 
-      socket.emit('openRoom', breakTime, matchTime, room.players[inviter]);
+    const room: GameData = {
+      inviter: {
+        id: inviter,
+        username: dbData.players[inviter].username
+      },
+      invitee: {
+        id: socket.id,
+        username: dbData.players[socket.id].username
+      },
+      currentBoard: Array(9).fill(null) as BoardMoves,
+      currentMove: inviter,
+      breakTime,
+      matchTime
+    };
+    dbData.games[inviter] = room;
 
-      io.to(inviter).emit(
-        'openRoom',
-        breakTime,
-        matchTime,
-        room.players[socket.id]
-      );
+    deleteFromSearch(dbData, inviter);
+    deleteFromSearch(dbData, socket.id);
 
-      timers[socket.id] = new Timer();
-      timers[inviter] = new Timer();
-      pause(socket.id, inviter, inviter, breakTime);
+    socket.emit('openRoom', breakTime, matchTime, room.inviter.username);
+    io.to(inviter).emit(
+      'openRoom',
+      breakTime,
+      matchTime,
+      room.invitee.username
+    );
+
+    timers[socket.id] = new Timer();
+    timers[inviter] = new Timer();
+    startBreak(socket.id, inviter, inviter, breakTime);
+  });
+
+  socket.on('leaveGame', () => leaveGame(dbData, socket.id));
+
+  socket.on('ready', function initial() {
+    const gameData = getGameData(dbData, socket.id);
+    if (gameData === undefined) return;
+    const { opponent } = gameData;
+
+    io.to(opponent.id).emit('opponentReady');
+
+    socket.on('ready', function restartMatch() {
+      // socket.emit('opponentReady');
+      io.to(opponent.id).emit('opponentReady');
+
+      startGame(socket.id);
+
+      socket.on('ready', initial);
+      socket.off('ready', restartMatch);
     });
 
-    socket.on('leaveGame', () => {
-      const game = getGameData(dbData, socket.id);
-      if (game === undefined) return;
-      const { gameID, opponentID } = game;
+    socket.off('ready', initial);
+  });
 
-      io.to(opponentID).emit('dismissGame', 'Opponent has left the game');
-      delete dbData.games[gameID];
-    });
+  socket.on('move', (pos) => {
+    handleMove(pos, socket);
+  });
 
-    socket.on('ready', function initial() {
-      const gameData = getGameData(dbData, socket.id);
-      if (gameData === undefined) return;
-      const {
-        gameID,
-        opponentID,
-        username,
-        opponentUsername,
-        matchTime,
-        breakTime
-      } = gameData;
-
-      io.to(opponentID).emit('opponentReady');
-
-      socket.on('ready', function restartMatch() {
-        // socket.emit('opponentReady');
-        io.to(opponentID).emit('opponentReady');
-
-        timers[opponentID].start(matchTime * 1000, () => {
-          pause(opponentID, socket.id, gameID, breakTime);
-
-          io.to(opponentID).emit('gameOver', username);
-          socket.emit('gameOver', username);
-        });
-
-        timers[socket.id].start(matchTime * 1000, () => {
-          pause(opponentID, socket.id, gameID, breakTime);
-
-          io.to(opponentID).emit('gameOver', opponentUsername);
-          socket.emit('gameOver', opponentUsername);
-        });
-
-        socket.on('ready', initial);
-        socket.off('ready', restartMatch);
-      });
-
-      socket.off('ready', initial);
-    });
-
-    socket.on('move', () => {});
-
-    socket.on('disconnect', () => {
-      deleteFromSearch(dbData, socket.id);
-      // if (userInGame) cancelGame();
-    });
+  socket.on('disconnect', () => {
+    deleteFromSearch(dbData, socket.id);
+    leaveGame(dbData, socket.id);
   });
 });
 
 httpServer.listen(Number(process.env.PORT) || 8080);
 
-function pause(
-  player1: string,
-  player2: string,
+function startBreak(
+  inviter: string,
+  invitee: string,
   gameID: string,
   breakTime: number
-) {
-  const inviter = gameID === player1 ? player1 : player2;
-  const invitee = gameID === player1 ? player2 : player1;
-
+): void {
   timers[invitee].reset();
   timers[inviter].reset();
 
@@ -228,4 +194,87 @@ function pause(
     io.to(inviter).emit('dismissGame', 'Ran out of break time');
     delete dbData.games[inviter];
   });
+}
+
+function handleMove(
+  pos: number,
+  socket: Socket<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >
+) {
+  const game = getGameData(dbData, socket.id);
+  if (game === undefined) return;
+  const { opponent, username, invitee, inviter, gameID, breakTime } = game;
+
+  const result = checkMove(dbData, socket.id, pos);
+
+  // In case of null we just don't do anything
+  switch (result) {
+    case null:
+      break;
+    case true:
+      timers[socket.id].pause();
+      timers[opponent.id].resume();
+      io.to(opponent.id).emit('opponentMove', pos);
+      break;
+    case false:
+      startBreak(inviter.id, invitee.id, gameID, breakTime);
+      io.to(opponent.id).emit(
+        'gameOver',
+        opponent.username,
+        `${username} has made an illegal move. ${opponent.username} wins!`
+      );
+      socket.emit(
+        'gameOver',
+        opponent.username,
+        `${username} has made an illegal move. ${opponent.username} wins!`
+      );
+      break;
+    case 'WIN':
+      startBreak(inviter.id, invitee.id, gameID, breakTime);
+      io.to(opponent.id).emit('gameOver', username);
+      socket.emit('gameOver', username, 'You win!');
+      break;
+    case 'DRAW':
+      startBreak(inviter.id, invitee.id, gameID, breakTime);
+      io.to(opponent.id).emit('gameOver', 'Friendship', 'Draw!');
+      socket.emit('gameOver', 'Friendship', 'Draw!');
+      break;
+  }
+}
+
+function startGame(socketID: string) {
+  const { inviter, invitee, matchTime, gameID, breakTime } = getGameData(
+    dbData,
+    socketID
+  )!;
+
+  io.to(inviter.id).emit('startGame', true);
+  io.to(invitee.id).emit('startGame', false);
+
+  timers[inviter.id].start(matchTime * 1000, () => {
+    startBreak(inviter.id, invitee.id, gameID, breakTime);
+
+    io.to(inviter.id).emit('gameOver', invitee.username);
+    io.to(invitee.id).emit('gameOver', invitee.username);
+  });
+
+  timers[invitee.id].start(matchTime * 1000, () => {
+    startBreak(inviter.id, invitee.id, gameID, breakTime);
+
+    io.to(inviter.id).emit('gameOver', inviter.username);
+    io.to(invitee.id).emit('gameOver', inviter.username);
+  });
+}
+
+export function leaveGame(dbData: DbData, socketID: string): void {
+  const game = getGameData(dbData, socketID);
+  if (game === undefined) return;
+  const { gameID, opponent } = game;
+
+  io.to(opponent.id).emit('dismissGame', 'Opponent has left the game');
+  delete dbData.games[gameID];
 }

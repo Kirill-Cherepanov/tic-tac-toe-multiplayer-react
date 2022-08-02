@@ -39,11 +39,17 @@ type BoardMoves = [
 ];
 
 type GameData = {
-  players: {
-    [socketID: string]: string;
+  inviter: {
+    id: string;
+    username: string;
   };
-  currentGame: BoardMoves;
-  currentMove: 'o' | 'x';
+  invitee: {
+    id: string;
+    username: string;
+  };
+  // firstMove: string;
+  currentMove: string;
+  currentBoard: BoardMoves;
   matchTime: number;
   breakTime: number;
 };

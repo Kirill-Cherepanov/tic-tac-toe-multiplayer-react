@@ -80,10 +80,13 @@ export default function MultiPlayer({
       setCurrentMove('o');
     });
 
-    socket.on('gameOver', (winner) => {
+    socket.on('gameOver', (winner, message) => {
       timer.setTime(breakTime);
       setEndMessage((endMessage) => {
-        return { ...endMessage, ...{ hidden: false } };
+        return {
+          ...endMessage,
+          ...{ hidden: false, messageText: message ?? `${winner} wins!` }
+        };
       });
     });
 

@@ -21,9 +21,16 @@ const dbData: DbData = {
   },
   games: {
     fake_room: {
-      players: { fake_id3: 'KissMy', fake_id4: 'Kot-payk' },
-      currentGame: ['', '', '', '', '', '', '', '', ''],
-      currentMove: 'o',
+      inviter: {
+        id: 'fake_id3',
+        username: 'KissMy'
+      },
+      invitee: {
+        id: 'fake_id4',
+        username: 'Kot-payk'
+      },
+      currentBoard: ['', '', '', '', '', '', '', '', ''],
+      currentMove: 'Kot-payk',
       matchTime: 10,
       breakTime: 5
     }

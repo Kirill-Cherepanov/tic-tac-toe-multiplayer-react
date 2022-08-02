@@ -1,4 +1,4 @@
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 
 // export function updateDb(dbData: DbData): Promise<void> {
 //   return new Promise((resolve, reject) => {
@@ -167,11 +167,7 @@ export const getSearchUpdater = (): SearchUpdater =>
   })();
 
 export function deleteFromSearch(dbData: DbData, socketID: string): void {
-  if (dbData.players[socketID] === undefined) {
-    return;
-    // const errorMessage = `Can not delete the user ${socketID}.\nThere is no such user in\n${dbData.players}!`;
-    // throw Error(errorMessage);
-  }
+  if (dbData.players[socketID] === undefined) return;
 
   for (let invited of dbData.players[socketID].invited) {
     if (dbData.players[invited] === undefined) continue;
@@ -207,21 +203,21 @@ export function isUserInSearch(
   );
 }
 
-export function isUserInGame(
-  dbData: DbData,
-  socketID: string
-): string | boolean {
-  const games = Object.values(dbData.games);
-  let room: string | undefined;
+// export function isUserInGame(
+//   dbData: DbData,
+//   socketID: string
+// ): string | boolean {
+//   const games = Object.values(dbData.games);
+//   let room: string | undefined;
 
-  for (let game of games) {
-    if (Object.keys(game.players).includes(socketID)) {
-      room = Object.keys(game.players)[1];
-    }
-  }
+//   for (let game of games) {
+//     if (Object.keys(game.players).includes(socketID)) {
+//       room = Object.keys(game.players)[1];
+//     }
+//   }
 
-  return room || false;
-}
+//   return room || false;
+// }
 
 export function calculateGameParams(
   params1: SearchParams,
@@ -249,23 +245,58 @@ export function calculateGameParams(
 
 export function getGameData(dbData: DbData, socketID: string) {
   const game = Object.entries(dbData.games).find((game) => {
-    return Object.keys(game[1].players).includes(socketID);
+    return game[1].invitee.id === socketID || game[1].inviter.id === socketID;
   });
-
   if (!game) return;
-
-  const [opponentID, opponentUsername] = <[string, string]>(
-    Object.entries(game[1].players).find((i) => i[0] !== socketID)
-  );
+  const [gameID, gameData] = game;
 
   return {
-    gameID: game[0],
-    opponentID,
-    opponentUsername,
-    username: game[1].players[socketID],
-    breakTime: game[1].breakTime,
-    matchTime: game[1].matchTime
+    gameID: gameID,
+    username:
+      gameData.invitee.id === socketID
+        ? gameData.invitee.username
+        : gameData.inviter.username,
+    opponent:
+      gameData.invitee.id === socketID ? gameData.inviter : gameData.invitee,
+    invitee: gameData.invitee,
+    inviter: gameData.inviter,
+    breakTime: gameData.breakTime,
+    matchTime: gameData.matchTime,
+    currentMove: gameData.currentMove,
+    currentBoard: gameData.currentBoard
   };
+}
+
+export function checkMove(
+  dbData: DbData,
+  socketID: string,
+  pos: number
+): boolean | 'WIN' | 'DRAW' | null {
+  const WINNING_COMBINATIONS = [
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  const checkWin = (currentMove: string, cellsMarks: string[]) => {
+    return WINNING_COMBINATIONS.some((combination) => {
+      return combination.every((pos) => cellsMarks[pos] === currentMove);
+    });
+  };
+
+  // Doens't seem very good
+  const game = getGameData(dbData, socketID);
+  if (game === undefined) return null;
+  const { currentBoard, currentMove } = game;
+  if (socketID !== currentMove) return null;
+  if (currentBoard[pos]) return false;
+  if (currentBoard.every((mark) => mark)) return 'DRAW';
+  if (checkWin(currentMove, currentBoard)) return 'WIN';
+  else return true;
 }
 
 // export function dismissGame(
