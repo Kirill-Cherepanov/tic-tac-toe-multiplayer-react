@@ -247,6 +247,27 @@ export function calculateGameParams(
   return { breakTime, matchTime };
 }
 
+export function getGameData(dbData: DbData, socketID: string) {
+  const game = Object.entries(dbData.games).find((game) => {
+    return Object.keys(game[1].players).includes(socketID);
+  });
+
+  if (!game) return;
+
+  const [opponentID, opponentUsername] = <[string, string]>(
+    Object.entries(game[1].players).find((i) => i[0] !== socketID)
+  );
+
+  return {
+    gameID: game[0],
+    opponentID,
+    opponentUsername,
+    username: game[1].players[socketID],
+    breakTime: game[1].breakTime,
+    matchTime: game[1].matchTime
+  };
+}
+
 // export function dismissGame(
 //   dbData: DbData,
 //   socketID: string,

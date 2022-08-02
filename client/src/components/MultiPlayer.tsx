@@ -35,7 +35,7 @@ export default function MultiPlayer({
         };
       });
 
-      socket?.off('opponentReady');
+      socket.off('opponentReady');
       socket.on('opponentReady', () => {
         socket.emit('ready');
         socket.off('opponentReady');

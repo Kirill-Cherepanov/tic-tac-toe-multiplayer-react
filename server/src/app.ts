@@ -12,7 +12,8 @@ import {
   isUserInSearch,
   isUserInGame,
   areSearchParamsCompatible,
-  calculateGameParams
+  calculateGameParams,
+  getGameData
 } from './DbManipulation';
 
 const httpServer = http.createServer();
@@ -60,6 +61,9 @@ io.on('connection', (socket) => {
       'invite',
       'cancelInvite',
       'acceptInvite',
+      'leaveGame',
+      'ready',
+      'move',
       'disconnect'
     ].forEach((event) => socket.removeAllListeners(event));
 
@@ -145,12 +149,58 @@ io.on('connection', (socket) => {
 
       timers[socket.id] = new Timer();
       timers[inviter] = new Timer();
-      timers[socket.id].start((breakTime + 1) * 1000, () => {
-        socket.emit('dismissGame', 'Ran out of break time');
-        io.to(inviter).emit('dismissGame', 'Ran out of break time');
-        delete dbData.games[inviter];
-      });
+      pause(socket.id, inviter, inviter, breakTime);
     });
+
+    socket.on('leaveGame', () => {
+      const game = getGameData(dbData, socket.id);
+      if (game === undefined) return;
+      const { gameID, opponentID } = game;
+
+      io.to(opponentID).emit('dismissGame', 'Opponent has left the game');
+      delete dbData.games[gameID];
+    });
+
+    socket.on('ready', function initial() {
+      const gameData = getGameData(dbData, socket.id);
+      if (gameData === undefined) return;
+      const {
+        gameID,
+        opponentID,
+        username,
+        opponentUsername,
+        matchTime,
+        breakTime
+      } = gameData;
+
+      io.to(opponentID).emit('opponentReady');
+
+      socket.on('ready', function restartMatch() {
+        // socket.emit('opponentReady');
+        io.to(opponentID).emit('opponentReady');
+
+        timers[opponentID].start(matchTime * 1000, () => {
+          pause(opponentID, socket.id, gameID, breakTime);
+
+          io.to(opponentID).emit('gameOver', username);
+          socket.emit('gameOver', username);
+        });
+
+        timers[socket.id].start(matchTime * 1000, () => {
+          pause(opponentID, socket.id, gameID, breakTime);
+
+          io.to(opponentID).emit('gameOver', opponentUsername);
+          socket.emit('gameOver', opponentUsername);
+        });
+
+        socket.on('ready', initial);
+        socket.off('ready', restartMatch);
+      });
+
+      socket.off('ready', initial);
+    });
+
+    socket.on('move', () => {});
 
     socket.on('disconnect', () => {
       deleteFromSearch(dbData, socket.id);
@@ -160,3 +210,22 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(Number(process.env.PORT) || 8080);
+
+function pause(
+  player1: string,
+  player2: string,
+  gameID: string,
+  breakTime: number
+) {
+  const inviter = gameID === player1 ? player1 : player2;
+  const invitee = gameID === player1 ? player2 : player1;
+
+  timers[invitee].reset();
+  timers[inviter].reset();
+
+  timers[inviter].start((breakTime + 1) * 1000, () => {
+    io.to(invitee).emit('dismissGame', 'Ran out of break time');
+    io.to(inviter).emit('dismissGame', 'Ran out of break time');
+    delete dbData.games[inviter];
+  });
+}
