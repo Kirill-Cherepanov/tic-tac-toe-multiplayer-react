@@ -267,38 +267,6 @@ export function getGameData(dbData: DbData, socketID: string) {
   };
 }
 
-export function checkMove(
-  dbData: DbData,
-  socketID: string,
-  pos: number
-): boolean | 'WIN' | 'DRAW' | null {
-  const WINNING_COMBINATIONS = [
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ];
-  const checkWin = (currentMove: string, cellsMarks: string[]) => {
-    return WINNING_COMBINATIONS.some((combination) => {
-      return combination.every((pos) => cellsMarks[pos] === currentMove);
-    });
-  };
-
-  // Doens't seem very good
-  const game = getGameData(dbData, socketID);
-  if (game === undefined) return null;
-  const { currentBoard, currentMove } = game;
-  if (socketID !== currentMove) return null;
-  if (currentBoard[pos]) return false;
-  if (currentBoard.every((mark) => mark)) return 'DRAW';
-  if (checkWin(currentMove, currentBoard)) return 'WIN';
-  else return true;
-}
-
 // export function dismissGame(
 //   dbData: DbData,
 //   socketID: string,

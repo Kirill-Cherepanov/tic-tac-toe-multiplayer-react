@@ -12,8 +12,7 @@ import {
   isUserInSearch,
   areSearchParamsCompatible,
   calculateGameParams,
-  getGameData,
-  checkMove
+  getGameData
 } from './DbManipulation';
 
 const httpServer = http.createServer();
@@ -196,56 +195,6 @@ function startBreak(
   });
 }
 
-function handleMove(
-  pos: number,
-  socket: Socket<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  >
-) {
-  const game = getGameData(dbData, socket.id);
-  if (game === undefined) return;
-  const { opponent, username, invitee, inviter, gameID, breakTime } = game;
-
-  const result = checkMove(dbData, socket.id, pos);
-
-  // In case of null we just don't do anything
-  switch (result) {
-    case null:
-      break;
-    case true:
-      timers[socket.id].pause();
-      timers[opponent.id].resume();
-      io.to(opponent.id).emit('opponentMove', pos);
-      break;
-    case false:
-      startBreak(inviter.id, invitee.id, gameID, breakTime);
-      io.to(opponent.id).emit(
-        'gameOver',
-        opponent.username,
-        `${username} has made an illegal move. ${opponent.username} wins!`
-      );
-      socket.emit(
-        'gameOver',
-        opponent.username,
-        `${username} has made an illegal move. ${opponent.username} wins!`
-      );
-      break;
-    case 'WIN':
-      startBreak(inviter.id, invitee.id, gameID, breakTime);
-      io.to(opponent.id).emit('gameOver', username);
-      socket.emit('gameOver', username, 'You win!');
-      break;
-    case 'DRAW':
-      startBreak(inviter.id, invitee.id, gameID, breakTime);
-      io.to(opponent.id).emit('gameOver', 'Friendship', 'Draw!');
-      socket.emit('gameOver', 'Friendship', 'Draw!');
-      break;
-  }
-}
-
 function startGame(socketID: string) {
   const { inviter, invitee, matchTime, gameID, breakTime } = getGameData(
     dbData,
@@ -255,19 +204,103 @@ function startGame(socketID: string) {
   io.to(inviter.id).emit('startGame', true);
   io.to(invitee.id).emit('startGame', false);
 
-  timers[inviter.id].start(matchTime * 1000, () => {
+  timers[inviter.id].start((matchTime + 1) * 1000, () => {
     startBreak(inviter.id, invitee.id, gameID, breakTime);
 
     io.to(inviter.id).emit('gameOver', invitee.username);
     io.to(invitee.id).emit('gameOver', invitee.username);
   });
 
-  timers[invitee.id].start(matchTime * 1000, () => {
+  timers[invitee.id].start((matchTime + 1) * 1000, () => {
     startBreak(inviter.id, invitee.id, gameID, breakTime);
 
     io.to(inviter.id).emit('gameOver', inviter.username);
     io.to(invitee.id).emit('gameOver', inviter.username);
   });
+}
+
+function handleMove(
+  pos: number,
+  socket: Socket<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >
+) {
+  const WINNING_COMBINATIONS = [
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+
+  const game = getGameData(dbData, socket.id);
+  if (game === undefined) return;
+  const {
+    opponent,
+    username,
+    invitee,
+    inviter,
+    gameID,
+    breakTime,
+    currentBoard,
+    currentMove
+  } = game;
+  if (currentMove !== socket.id) return;
+
+  const checkWin = () => {
+    return WINNING_COMBINATIONS.some((combination) => {
+      return combination.every((pos) => currentBoard[pos] === currentMove);
+    });
+  };
+
+  const checkDraw = () => currentBoard.every((mark) => mark);
+
+  const makeMove = () => {
+    dbData.games[gameID].currentMove = opponent.id;
+    dbData.games[gameID].currentBoard[pos] = socket.id;
+  };
+
+  // Check if the move is illegal, i.e. if the move position is already marked
+  if (currentBoard[pos]) {
+    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    io.to(opponent.id).emit(
+      'gameOver',
+      opponent.username,
+      `${username} has made an illegal move. ${opponent.username} wins!`
+    );
+    socket.emit(
+      'gameOver',
+      opponent.username,
+      `${username} has made an illegal move. ${opponent.username} wins!`
+    );
+    return;
+  }
+
+  makeMove();
+  io.to(opponent.id).emit('opponentMove', pos);
+
+  if (checkWin()) {
+    io.to(opponent.id).emit('gameOver', username);
+    socket.emit('gameOver', username, 'You win!');
+    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    return;
+  }
+
+  if (checkDraw()) {
+    io.to(opponent.id).emit('gameOver', 'Friendship', 'Draw!');
+    socket.emit('gameOver', 'Friendship', 'Draw!');
+    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    return;
+  }
+
+  timers[socket.id].pause();
+  timers[opponent.id].resume();
 }
 
 export function leaveGame(dbData: DbData, socketID: string): void {

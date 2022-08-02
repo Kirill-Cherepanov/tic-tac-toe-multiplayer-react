@@ -20,11 +20,8 @@ export default class Timer {
   }
 
   reset() {
-    if (this.timer === undefined) {
-      throw Error('Can not reset the timer. Timer was not set!');
-    }
+    if (this.timer !== undefined) clearInterval(this.timer);
 
-    clearInterval(this.timer);
     this.timer = undefined;
     this._time = 0;
     this._maxTime = 0;
@@ -56,9 +53,8 @@ export default class Timer {
   }
 
   resume() {
-    if (this.timer !== undefined) {
-      throw Error('Can not resume the timer. Timer was not stopped!');
-    }
+    if (this.timer !== undefined) return;
+
     this.start(this._maxTime, this.callback);
   }
 }

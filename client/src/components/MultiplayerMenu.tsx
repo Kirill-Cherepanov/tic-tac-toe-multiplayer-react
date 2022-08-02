@@ -8,13 +8,13 @@ type Props = {
   socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 };
 
-const DEFAULT_SEARCH_PARAMS = {
+const DEFAULT_SEARCH_PARAMS: SearchParams = {
   matchTime: {
-    value: 30,
+    value: 20,
     strict: false
   },
   breakTime: {
-    value: 30,
+    value: 20,
     strict: false
   }
 };
@@ -22,7 +22,7 @@ const DEFAULT_SEARCH_PARAMS = {
 export default function MultiplayerMenu({ goBack, socket }: Props) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionsData>({});
-  const [searchParams, setSearchParams] = useLocalStorage<SearchParams>(
+  const [searchParams, setSearchParams] = useLocalStorage(
     'searchParams',
     DEFAULT_SEARCH_PARAMS
   );

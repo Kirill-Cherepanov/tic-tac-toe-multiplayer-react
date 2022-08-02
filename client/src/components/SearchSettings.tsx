@@ -25,7 +25,7 @@ export default function SearchSettings({ searchParamsState, goBack }: Props) {
                 const target = e.currentTarget;
                 setSearchParams((searchParams) => {
                   const newMatchTime = { ...searchParams.matchTime };
-                  newMatchTime.value = Number(target.value);
+                  newMatchTime.value = Number(target.value) as Timings;
                   return { ...searchParams, ...{ matchTime: newMatchTime } };
                 });
               }}
@@ -67,7 +67,7 @@ export default function SearchSettings({ searchParamsState, goBack }: Props) {
                 const target = e.currentTarget;
                 setSearchParams((searchParams) => {
                   const newBreakTime = { ...searchParams.breakTime };
-                  newBreakTime.value = Number(target.value);
+                  newBreakTime.value = Number(target.value) as Timings;
                   return { ...searchParams, ...{ breakTime: newBreakTime } };
                 });
               }}
