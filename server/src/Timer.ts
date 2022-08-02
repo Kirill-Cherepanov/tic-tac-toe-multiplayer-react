@@ -33,16 +33,11 @@ export default class Timer {
     this.timer = setInterval(() => {
       if (this._time >= this._maxTime) {
         this.reset();
+        console.log('time: ' + this._time + ' maxTime: ' + this._maxTime);
         callback();
       }
       this._time += this.TIMERINTERVAL;
     }, this.TIMERINTERVAL);
-  }
-
-  add(addTime: number) {
-    const timeLeft = this._maxTime - this._time;
-    this.reset();
-    if (timeLeft + addTime >= 0) this.start(timeLeft + addTime, this.callback);
   }
 
   pause() {

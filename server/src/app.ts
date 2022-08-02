@@ -204,6 +204,9 @@ function startGame(socketID: string) {
   io.to(inviter.id).emit('startGame', true);
   io.to(invitee.id).emit('startGame', false);
 
+  timers[inviter.id].reset();
+  timers[invitee.id].reset();
+
   timers[inviter.id].start((matchTime + 1) * 1000, () => {
     startBreak(inviter.id, invitee.id, gameID, breakTime);
 
