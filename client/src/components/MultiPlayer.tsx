@@ -57,14 +57,14 @@ export default function MultiPlayer({
   );
 
   useEffect(() => {
-    timer.setTime(breakTime);
+    timer.current.setTime(breakTime);
 
     socket?.off('startGame');
     socket?.off('gameOver');
     socket?.off('dismissGame');
 
     socket.on('startGame', (isFirstMove) => {
-      timer.setTime(matchTime);
+      timer.current.setTime(matchTime);
       setCellsMarks(Array<string>(9).fill(''));
       setEndMessage((endMessage) => {
         return {
@@ -81,7 +81,7 @@ export default function MultiPlayer({
     });
 
     socket.on('gameOver', (winner, message) => {
-      timer.setTime(breakTime);
+      timer.current.setTime(breakTime);
       setEndMessage((endMessage) => {
         return {
           ...endMessage,
@@ -91,7 +91,7 @@ export default function MultiPlayer({
     });
 
     socket.on('dismissGame', (message) => {
-      timer.setTime(0);
+      timer.current.setTime(0);
       setEndMessage({
         hidden: false,
         buttonText: 'Leave',
@@ -100,18 +100,21 @@ export default function MultiPlayer({
       });
     });
 
+    const timerCurrent = timer.current;
+
     return () => {
       socket.off('startGame');
       socket.off('gameOver');
       socket.off('dismissGame');
-      timer.pause();
+      // timer.current.reset();
+      timerCurrent.reset();
     };
   }, [leaveGame, socket, matchTime, breakTime, timer]);
 
   useEffect(() => {
     socket?.off('opponentMove');
     socket.on('opponentMove', (pos) => {
-      timer.resume();
+      timer.current.resume();
       makeMove(pos);
     });
 
@@ -140,9 +143,11 @@ export default function MultiPlayer({
         </button>
         <div className="multiplayer-game-timer-container">
           <div className="multiplayer-game-timer" data-timer>
-            {`0${Math.floor(time / 60)}:${Math.ceil(
-              time - Math.floor(time / 60) * 60
-            )}`}
+            {time >= 3600
+              ? ''
+              : `0${Math.floor(time / 60)}:${Math.ceil(
+                  time - Math.floor(time / 60) * 60
+                )}`}
           </div>
         </div>
       </div>

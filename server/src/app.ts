@@ -132,6 +132,7 @@ io.on('connection', (socket) => {
     deleteFromSearch(dbData, inviter);
     deleteFromSearch(dbData, socket.id);
 
+    console.log(`breakTime: ${breakTime} -- matchTime: ${matchTime}`);
     socket.emit('openRoom', breakTime, matchTime, room.inviter.username);
     io.to(inviter).emit(
       'openRoom',
@@ -155,7 +156,6 @@ io.on('connection', (socket) => {
     io.to(opponent.id).emit('opponentReady');
 
     socket.on('ready', function restartMatch() {
-      // socket.emit('opponentReady');
       io.to(opponent.id).emit('opponentReady');
 
       startGame(socket.id);
@@ -210,15 +210,30 @@ function startGame(socketID: string) {
   timers[inviter.id].start((matchTime + 1) * 1000, () => {
     startBreak(inviter.id, invitee.id, gameID, breakTime);
 
-    io.to(inviter.id).emit('gameOver', invitee.username);
-    io.to(invitee.id).emit('gameOver', invitee.username);
+    io.to(inviter.id).emit(
+      'gameOver',
+      invitee.username,
+      `Time's up! ${invitee.username} wins!`
+    );
+    io.to(invitee.id).emit(
+      'gameOver',
+      invitee.username,
+      `Time's up! ${invitee.username} wins!`
+    );
   });
 
   timers[invitee.id].start((matchTime + 1) * 1000, () => {
     startBreak(inviter.id, invitee.id, gameID, breakTime);
-
-    io.to(inviter.id).emit('gameOver', inviter.username);
-    io.to(invitee.id).emit('gameOver', inviter.username);
+    io.to(inviter.id).emit(
+      'gameOver',
+      inviter.username,
+      `Time's up! ${inviter.username} wins!`
+    );
+    io.to(invitee.id).emit(
+      'gameOver',
+      inviter.username,
+      `Time's up! ${inviter.username} wins!`
+    );
   });
 }
 
