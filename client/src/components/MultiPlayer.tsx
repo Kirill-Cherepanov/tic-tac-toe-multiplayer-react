@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import GameBoard from './GameBoard';
 import { Socket } from 'socket.io-client';
-import useTimer from '../hooks/useTimer';
+import useTimer from '../hooks/useTimer2';
 
 type MultiPlayerProps = {
   breakTime: number;
@@ -57,14 +57,14 @@ export default function MultiPlayer({
   );
 
   useEffect(() => {
-    timer.current.setTime(breakTime);
+    timer.setTime(breakTime);
 
     socket?.off('startGame');
     socket?.off('gameOver');
     socket?.off('dismissGame');
 
     socket.on('startGame', (isFirstMove) => {
-      timer.current.setTime(matchTime);
+      timer.setTime(matchTime);
       setCellsMarks(Array<string>(9).fill(''));
       setEndMessage((endMessage) => {
         return {
@@ -81,7 +81,8 @@ export default function MultiPlayer({
     });
 
     socket.on('gameOver', (winner, message) => {
-      timer.current.setTime(breakTime);
+      timer.reset();
+      timer.setTime(breakTime);
       setEndMessage((endMessage) => {
         return {
           ...endMessage,
@@ -91,7 +92,7 @@ export default function MultiPlayer({
     });
 
     socket.on('dismissGame', (message) => {
-      timer.current.setTime(0);
+      timer.setTime(0);
       setEndMessage({
         hidden: false,
         buttonText: 'Leave',
@@ -100,13 +101,13 @@ export default function MultiPlayer({
       });
     });
 
-    const timerCurrent = timer.current;
+    const timerCurrent = timer;
 
     return () => {
       socket.off('startGame');
       socket.off('gameOver');
       socket.off('dismissGame');
-      // timer.current.reset();
+      // timer.reset();
       timerCurrent.reset();
     };
   }, [leaveGame, socket, matchTime, breakTime, timer]);
@@ -114,7 +115,7 @@ export default function MultiPlayer({
   useEffect(() => {
     socket?.off('opponentMove');
     socket.on('opponentMove', (pos) => {
-      timer.current.resume();
+      timer.resume();
       makeMove(pos);
     });
 

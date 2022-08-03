@@ -132,7 +132,6 @@ io.on('connection', (socket) => {
     deleteFromSearch(dbData, inviter);
     deleteFromSearch(dbData, socket.id);
 
-    console.log(`breakTime: ${breakTime} -- matchTime: ${matchTime}`);
     socket.emit('openRoom', breakTime, matchTime, room.inviter.username);
     io.to(inviter).emit(
       'openRoom',

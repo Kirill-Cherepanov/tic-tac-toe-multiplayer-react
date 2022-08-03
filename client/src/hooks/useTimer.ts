@@ -7,6 +7,8 @@ type Timer = {
   reset: () => void;
 };
 
+const UPDATE_TIME = 1000;
+
 export default function useTimer(
   initialTime: number
 ): [React.MutableRefObject<Timer>, number] {
@@ -20,7 +22,8 @@ export default function useTimer(
   const pause = () => {
     setIntervalID((id) => id && clearInterval(id));
     if (startTime === null) return;
-    setTime((time) => maxTime - (Date.now() - startTime!) / 1000);
+    setTime(maxTime - (Date.now() - startTime!) / 1000);
+    setMaxTime(maxTime - (Date.now() - startTime!) / 1000);
     setStartTime(null);
   };
 
@@ -30,10 +33,10 @@ export default function useTimer(
     setTime(newTime);
     setStartTime(Date.now());
 
-    setIntervalID(
+    setIntervalID(() =>
       setInterval(() => {
         setTime((time) => {
-          if (time - 1 <= 0) {
+          if (time - (UPDATE_TIME + 100) / 1000 <= 0) {
             clearInterval(intervalID!);
             setMaxTime(0);
             setStartTime(null);
@@ -41,7 +44,7 @@ export default function useTimer(
           }
           return maxTime - (Date.now() - startTime!) / 1000;
         });
-      }, 1000)
+      }, UPDATE_TIME)
     );
   };
 
@@ -52,7 +55,7 @@ export default function useTimer(
     setStartTime(null);
   };
 
-  const resume = () => setTimerTime(time);
+  const resume = () => setTimerTime(maxTime);
 
   const timer = useRef<Timer>({
     setTime: setTimerTime,
