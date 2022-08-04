@@ -17,16 +17,11 @@ import {
 
 const httpServer = http.createServer();
 
-const io = new Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->(httpServer, {
+const corsOptions = {
   cors: {
     origin: [
-      'https://kissmyussr-tic-tac-toe-multiplayer.netlify.app/',
-      'https://62ebe3cf2717ce2980c65965--kissmyussr-tic-tac-toe-multiplayer.netlify.app/',
+      'https://kissmyussr-tic-tac-toe-multiplayer.netlify.app',
+      'https://62ebe3cf2717ce2980c65965--kissmyussr-tic-tac-toe-multiplayer.netlify.app',
       'http://127.0.0.1:3000',
       'http://192.168.100.2:3000',
       'http://localhost:3000',
@@ -37,7 +32,14 @@ const io = new Server<
     ],
     methods: ['GET']
   }
-});
+};
+
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, corsOptions);
 
 const UPDATE_SEARCH_TIME = 1000;
 
