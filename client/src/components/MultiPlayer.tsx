@@ -65,6 +65,7 @@ export default function MultiPlayer({
 
     socket.on('startGame', (isFirstMove) => {
       timer.setTime(matchTime);
+      if (!isFirstMove) timer.pause();
       setCellsMarks(Array<string>(9).fill(''));
       setEndMessage((endMessage) => {
         return {
@@ -91,8 +92,12 @@ export default function MultiPlayer({
       });
     });
 
-    socket.on('dismissGame', (message) => {
-      timer.setTime(0);
+    socket.on('dismissGame', (message, isForced) => {
+      if (isForced) {
+        leaveGame();
+        return;
+      }
+      timer.setTime(breakTime);
       setEndMessage({
         hidden: false,
         buttonText: 'Leave',
@@ -132,6 +137,7 @@ export default function MultiPlayer({
           if (cellsMarks[pos] || side !== currentMove) return;
 
           socket.emit('move', pos);
+          timer.pause();
           makeMove(pos);
         }}
         cellsMarks={cellsMarks}

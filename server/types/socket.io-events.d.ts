@@ -9,7 +9,7 @@ interface ServerToClientEvents {
 
   opponentMove: (position: number) => void;
   gameOver: (winner: string, message?: string) => void;
-  dismissGame: (message: string) => void;
+  dismissGame: (message: string, isForced: boolean) => void;
 }
 
 interface ClientToServerEvents {

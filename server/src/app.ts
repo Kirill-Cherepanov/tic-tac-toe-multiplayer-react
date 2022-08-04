@@ -122,7 +122,7 @@ io.on('connection', (socket) => {
         id: socket.id,
         username: dbData.players[socket.id].username
       },
-      currentBoard: Array(9).fill(null) as BoardMoves,
+      currentBoard: Array(9).fill('') as BoardMoves,
       currentMove: inviter,
       breakTime,
       matchTime
@@ -142,10 +142,10 @@ io.on('connection', (socket) => {
 
     timers[socket.id] = new Timer();
     timers[inviter] = new Timer();
-    startBreak(socket.id, inviter, inviter, breakTime);
+    startBreak(socket.id);
   });
 
-  socket.on('leaveGame', () => leaveGame(dbData, socket.id));
+  socket.on('leaveGame', () => leaveGame(socket.id));
 
   socket.on('ready', function initial() {
     const gameData = getGameData(dbData, socket.id);
@@ -172,42 +172,53 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     deleteFromSearch(dbData, socket.id);
-    leaveGame(dbData, socket.id);
+    leaveGame(socket.id);
   });
 });
 
 httpServer.listen(Number(process.env.PORT) || 8080);
 
-function startBreak(
-  inviter: string,
-  invitee: string,
-  gameID: string,
-  breakTime: number
-): void {
-  timers[invitee].reset();
-  timers[inviter].reset();
+function startBreak(socketID: string): void {
+  const game = getGameData(dbData, socketID);
+  if (game === undefined) return;
+  const { inviter, invitee, gameID, breakTime, opponent } = game;
 
-  timers[inviter].start((breakTime + 1) * 1000, () => {
-    io.to(invitee).emit('dismissGame', 'Ran out of break time');
-    io.to(inviter).emit('dismissGame', 'Ran out of break time');
-    delete dbData.games[inviter];
+  timers[invitee.id].reset();
+  timers[inviter.id].reset();
+
+  dbData.games[gameID].currentBoard = Array(9).fill('') as BoardMoves;
+  dbData.games[gameID].currentMove = opponent.id;
+
+  timers[inviter.id].start((breakTime + 1) * 1000, () => {
+    console.log(1);
+    io.to(invitee.id).emit('dismissGame', 'Ran out of break time', true);
+    io.to(inviter.id).emit('dismissGame', 'Ran out of break time', true);
+    delete dbData.games[inviter.id];
+    delete timers[invitee.id];
+    delete timers[inviter.id];
   });
 }
 
 function startGame(socketID: string) {
-  const { inviter, invitee, matchTime, gameID, breakTime } = getGameData(
+  const { inviter, invitee, matchTime, currentMove } = getGameData(
     dbData,
     socketID
   )!;
 
-  io.to(inviter.id).emit('startGame', true);
-  io.to(invitee.id).emit('startGame', false);
+  io.to(inviter.id).emit(
+    'startGame',
+    inviter.id === currentMove ? true : false
+  );
+  io.to(invitee.id).emit(
+    'startGame',
+    invitee.id === currentMove ? true : false
+  );
 
   timers[inviter.id].reset();
   timers[invitee.id].reset();
 
   timers[inviter.id].start((matchTime + 1) * 1000, () => {
-    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    startBreak(socketID);
 
     io.to(inviter.id).emit(
       'gameOver',
@@ -222,7 +233,7 @@ function startGame(socketID: string) {
   });
 
   timers[invitee.id].start((matchTime + 1) * 1000, () => {
-    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    startBreak(socketID);
     io.to(inviter.id).emit(
       'gameOver',
       inviter.username,
@@ -234,6 +245,8 @@ function startGame(socketID: string) {
       `Time's up! ${inviter.username} wins!`
     );
   });
+
+  timers[invitee.id].pause();
 }
 
 function handleMove(
@@ -258,16 +271,7 @@ function handleMove(
 
   const game = getGameData(dbData, socket.id);
   if (game === undefined) return;
-  const {
-    opponent,
-    username,
-    invitee,
-    inviter,
-    gameID,
-    breakTime,
-    currentBoard,
-    currentMove
-  } = game;
+  const { opponent, username, gameID, currentBoard, currentMove } = game;
   if (currentMove !== socket.id) return;
 
   const checkWin = () => {
@@ -285,7 +289,7 @@ function handleMove(
 
   // Check if the move is illegal, i.e. if the move position is already marked
   if (currentBoard[pos]) {
-    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    startBreak(socket.id);
     io.to(opponent.id).emit(
       'gameOver',
       opponent.username,
@@ -305,14 +309,14 @@ function handleMove(
   if (checkWin()) {
     io.to(opponent.id).emit('gameOver', username);
     socket.emit('gameOver', username, 'You win!');
-    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    startBreak(socket.id);
     return;
   }
 
   if (checkDraw()) {
     io.to(opponent.id).emit('gameOver', 'Friendship', 'Draw!');
     socket.emit('gameOver', 'Friendship', 'Draw!');
-    startBreak(inviter.id, invitee.id, gameID, breakTime);
+    startBreak(socket.id);
     return;
   }
 
@@ -320,11 +324,20 @@ function handleMove(
   timers[opponent.id].resume();
 }
 
-export function leaveGame(dbData: DbData, socketID: string): void {
+export function leaveGame(socketID: string): void {
+  timers[socketID]?.reset();
+  delete timers[socketID];
+
   const game = getGameData(dbData, socketID);
   if (game === undefined) return;
-  const { gameID, opponent } = game;
+  const { gameID, opponent, breakTime } = game;
 
-  io.to(opponent.id).emit('dismissGame', 'Opponent has left the game');
+  io.to(opponent.id).emit('dismissGame', 'Opponent has left the game', false);
+
+  timers[opponent.id].reset();
+  timers[opponent.id].start((breakTime + 1) * 1000, () => {
+    io.to(opponent.id).emit('dismissGame', 'Ran out of break time', true);
+  });
+
   delete dbData.games[gameID];
 }

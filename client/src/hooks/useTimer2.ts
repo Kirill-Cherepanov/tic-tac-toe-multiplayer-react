@@ -7,6 +7,8 @@ type Timer = {
   reset: () => void;
 };
 
+const UPDATE_TIME = 1000;
+
 let intervalID: undefined | NodeJS.Timer;
 
 export default function useTimer(initialTime: number): [Timer, number] {
@@ -16,21 +18,21 @@ export default function useTimer(initialTime: number): [Timer, number] {
   const [isOn, setIsOn] = useState(true);
 
   useEffect(() => {
-    if (isOn) {
-      intervalID = setInterval(() => {
-        setTime((time) => {
-          if (time - 1 <= 0) {
-            clearInterval(intervalID!);
-            setMaxTime(0);
-            setStartTime(null);
-            return 0;
-          }
-          return maxTime - (Date.now() - startTime!) / 1000;
-        });
-      }, 1000);
-    } else {
-      clearInterval(intervalID);
-    }
+    if (intervalID) clearInterval(intervalID);
+
+    if (!isOn) return;
+
+    intervalID = setInterval(() => {
+      setTime((time) => {
+        if (time - (UPDATE_TIME + 100) / 1000 <= 0) {
+          clearInterval(intervalID!);
+          setMaxTime(0);
+          setStartTime(null);
+          return 0;
+        }
+        return maxTime - (Date.now() - startTime!) / 1000;
+      });
+    }, 1000);
 
     return () => {
       clearInterval(intervalID);
@@ -46,6 +48,10 @@ export default function useTimer(initialTime: number): [Timer, number] {
 
   const pause = useCallback(() => {
     setIsOn(false);
+    setTime((time) => {
+      setMaxTime(time);
+      return time;
+    });
   }, []);
 
   const resume = useCallback(() => {
