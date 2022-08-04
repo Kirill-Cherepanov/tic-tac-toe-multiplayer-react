@@ -52,46 +52,50 @@ export function updateUser(
   username: string,
   searchParams: SearchParams
 ): void {
-  const prevData: PlayerData = JSON.parse(
-    JSON.stringify(dbData.players[socketID]) || 'null'
-  );
-  dbData.players[socketID] = {
-    username: username,
-    invited: [],
-    wasInvited: [],
-    searchParams
-  };
+  if (!dbData.players[socketID]) {
+    dbData.players[socketID] = {
+      username: username,
+      invited: [],
+      wasInvited: [],
+      searchParams
+    };
+    return;
+  }
 
-  if (prevData === null) return;
+  const wasInvited = dbData.players[socketID].wasInvited;
+  const invited = dbData.players[socketID].invited;
 
-  prevData.wasInvited.forEach((inviter) => {
+  dbData.players[socketID].wasInvited = wasInvited.filter((inviter) => {
     if (
       areSearchParamsCompatible(
         dbData.players[inviter].searchParams,
         searchParams
       )
     ) {
-      dbData.players[socketID].wasInvited.push(inviter);
-    } else {
-      dbData.players[inviter].invited = dbData.players[inviter].invited.filter(
-        (invitee) => invitee === socketID
-      );
+      return true;
     }
+    dbData.players[inviter].invited = dbData.players[inviter].invited.filter(
+      (invitee) => invitee !== socketID
+    );
+    return false;
   });
-  prevData.invited.forEach((invitee) => {
+
+  dbData.players[socketID].invited = invited.filter((invitee) => {
     if (
       areSearchParamsCompatible(
         dbData.players[invitee].searchParams,
         searchParams
       )
     ) {
-      dbData.players[socketID].invited.push(invitee);
-    } else {
-      dbData.players[invitee].wasInvited = dbData.players[
-        invitee
-      ].wasInvited.filter((inviter) => inviter === socketID);
+      return true;
     }
+    dbData.players[invitee].wasInvited = dbData.players[
+      invitee
+    ].wasInvited.filter((inviter) => inviter !== socketID);
+    return false;
   });
+
+  dbData.players[socketID].searchParams = searchParams;
 }
 
 type SearchUpdate = (
