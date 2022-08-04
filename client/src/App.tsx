@@ -11,6 +11,7 @@ import EnterMultiplayer from './components/EnterMultiplayer';
 //   ServerToClientEvents,
 //   ClientToServerEvents
 // >;
+console.log(process.env);
 
 const getBoard = (
   gameMode: string,
