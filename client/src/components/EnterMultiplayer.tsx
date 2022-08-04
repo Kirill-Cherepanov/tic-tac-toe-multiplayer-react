@@ -19,8 +19,15 @@ interface UsernameFormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
 }
 
-// const HEROKU_BACKEND = 'https://lit-citadel-75107.herokuapp.com/';
+const HEROKU_BACKEND = 'https://lit-citadel-75107.herokuapp.com/';
 const LOCAL_BACKEND = 'http://localhost:8080';
+
+const getBackendURL = () => {
+  if (process.env.IS_DEPLOY === 'true') {
+    return HEROKU_BACKEND;
+  }
+  return LOCAL_BACKEND;
+};
 
 export default function EnterMultiplayer({ setGameMode }: Props) {
   const [socket, setSocket] = useState<
@@ -41,7 +48,7 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
 
   useEffect(() => {
     setSocket(
-      io(LOCAL_BACKEND) as Socket<ServerToClientEvents, ClientToServerEvents>
+      io(getBackendURL()) as Socket<ServerToClientEvents, ClientToServerEvents>
     );
   }, []);
 
