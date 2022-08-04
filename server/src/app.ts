@@ -25,7 +25,8 @@ const io = new Server<
 >(httpServer, {
   cors: {
     origin: [
-      'https://zesty-gecko-26d2c4.netlify.app/',
+      'https://kissmyussr-tic-tac-toe-multiplayer.netlify.app/',
+      'https://62ebe3cf2717ce2980c65965--kissmyussr-tic-tac-toe-multiplayer.netlify.app/',
       'http://127.0.0.1:3000',
       'http://192.168.100.2:3000',
       'http://localhost:3000',
