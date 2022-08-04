@@ -325,7 +325,7 @@ function handleMove(
   timers[opponent.id].resume();
 }
 
-export function leaveGame(socketID: string): void {
+function leaveGame(socketID: string): void {
   timers[socketID]?.reset();
   delete timers[socketID];
 
