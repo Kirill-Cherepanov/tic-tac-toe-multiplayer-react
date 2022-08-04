@@ -4,15 +4,6 @@ import './App.sass';
 import SinglePlayer from './components/SinglePlayer';
 import EnterMultiplayer from './components/EnterMultiplayer';
 
-// const HEROKU_BACKEND = 'https://lit-citadel-75107.herokuapp.com/';
-// const LOCAL_BACKEND = 'http://localhost:8080';
-
-// const socket = io(LOCAL_BACKEND) as Socket<
-//   ServerToClientEvents,
-//   ClientToServerEvents
-// >;
-console.log(process.env);
-
 const getBoard = (
   gameMode: string,
   setGameMode: React.Dispatch<React.SetStateAction<string>>
