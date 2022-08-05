@@ -37,6 +37,11 @@ export default function SinglePlayer({ setGameMode }: Props) {
 
     if (!isWin && !isDraw) return;
 
+    setCurrentMove(() => {
+      const shouldSwap = cellsMarks.filter((mark) => mark).length % 2 === 0;
+      return shouldSwap ? prevMove : currentMove;
+    });
+
     const messageText = isWin
       ? `${prevMove === 'x' ? 'Cross' : 'Circle'} player wins!`
       : 'Draw!';
