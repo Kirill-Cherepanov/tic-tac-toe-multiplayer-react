@@ -27,7 +27,11 @@ export function getRandomMove(cellsMarks: string[]) {
   return pos;
 }
 
-export function getBestMove(cellsMarks: string[], side: string): number {
+export function getBestMove(
+  cellsMarks: string[],
+  side: string,
+  giveaway: boolean = false
+): number {
   if (cellsMarks.every((mark) => !mark)) return getRandomMove(cellsMarks);
 
   const opponent = side === 'o' ? 'x' : 'o';
@@ -37,14 +41,13 @@ export function getBestMove(cellsMarks: string[], side: string): number {
       position: null | number;
       score: number;
     };
-
     const currentOpponent = currentSide === 'o' ? 'x' : 'o';
 
     if (checkWin(currentOpponent, cellsMarks)) {
       return {
         position: null,
         score:
-          (currentSide === side ? 1 : -1) *
+          ((currentSide === opponent) !== giveaway ? 1 : -1) *
           (cellsMarks.filter((mark) => !mark).length + 1)
       };
     }
@@ -55,20 +58,22 @@ export function getBestMove(cellsMarks: string[], side: string): number {
       score: currentSide === opponent ? Infinity : -Infinity
     };
 
-    cellsMarks
-      .filter((move) => !move)
-      .forEach((move, i) => {
-        const score: Score = minimax(
-          [...cellsMarks.slice(0, i), currentSide, ...cellsMarks.slice(i + 1)],
-          currentOpponent
-        );
-        score.position = i;
-        if (currentSide === side && score.score > bestScore.score) {
-          bestScore = score;
-        } else if (currentSide === opponent && score.score < bestScore.score) {
-          bestScore = score;
-        }
-      });
+    (
+      cellsMarks
+        .map((mark, i) => (mark ? null : i))
+        .filter((mark) => mark !== null) as number[]
+    ).forEach((i) => {
+      const score: Score = minimax(
+        [...cellsMarks.slice(0, i), currentSide, ...cellsMarks.slice(i + 1)],
+        currentOpponent
+      );
+      score.position = i;
+      if (currentSide === side && score.score > bestScore.score) {
+        bestScore = score;
+      } else if (currentSide === opponent && score.score < bestScore.score) {
+        bestScore = score;
+      }
+    });
 
     return bestScore;
   }

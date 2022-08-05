@@ -59,7 +59,9 @@ export default function AIPlayer({ setGameMode }: Props) {
       setCellsMarks((cellsMarks) => {
         let pos: number;
 
-        if (Math.random() <= CHANCE_OF_RANDOM_MOVE[difficulty]) {
+        if (difficulty === 4) {
+          pos = getBestMove([...cellsMarks], move, true);
+        } else if (Math.random() <= CHANCE_OF_RANDOM_MOVE[difficulty]) {
           pos = getRandomMove([...cellsMarks]);
         } else pos = getBestMove([...cellsMarks], move);
 
@@ -94,10 +96,7 @@ export default function AIPlayer({ setGameMode }: Props) {
 
   useEffect(() => {
     const prevMove = currentMove === 'x' ? 'o' : 'x';
-    if (checkGameOver(prevMove, cellsMarks)) {
-      console.log('over');
-      return;
-    }
+    if (checkGameOver(prevMove, cellsMarks)) return;
 
     if (side !== currentMove) makeAiMove(currentMove);
   }, [cellsMarks, currentMove, makeAiMove, side]);
@@ -124,6 +123,9 @@ export default function AIPlayer({ setGameMode }: Props) {
           </button>
           <button id="restart-button" onClick={() => setDifficulty(0)}>
             Easy
+          </button>
+          <button id="restart-button" onClick={() => setDifficulty(4)}>
+            Reverse Impossible
           </button>
         </div>
       )}
