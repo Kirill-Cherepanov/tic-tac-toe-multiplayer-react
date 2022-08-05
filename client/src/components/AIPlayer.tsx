@@ -10,7 +10,7 @@ import {
 
 type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
 
-const CHANCE_OF_RANDOM_MOVE = [1, 0.25, 0];
+const CHANCE_OF_RANDOM_MOVE = [1, 0.75, 0.25, 0];
 
 export default function AIPlayer({ setGameMode }: Props) {
   const [difficulty, setDifficulty] = useState(-1);
