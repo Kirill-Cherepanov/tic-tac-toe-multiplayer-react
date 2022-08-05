@@ -1,19 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import GameBoard from './GameBoard';
 import capitalize from '../utilities/capitalize';
+import { checkDraw, checkWin } from '../utilities/ticTacToe';
 
 type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
-
-const WINNING_COMBINATIONS = [
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 4, 8],
-  [2, 4, 6]
-];
 
 export default function SinglePlayer({ setGameMode }: Props) {
   const [currentMove, setCurrentMove] = useState('o');
@@ -96,11 +86,3 @@ export default function SinglePlayer({ setGameMode }: Props) {
     </>
   );
 }
-
-const checkWin = (currentMove: string, cellsMarks: string[]) => {
-  return WINNING_COMBINATIONS.some((combination) => {
-    return combination.every((pos) => cellsMarks[pos] === currentMove);
-  });
-};
-
-const checkDraw = (cellsMarks: string[]) => cellsMarks.every((mark) => mark);
