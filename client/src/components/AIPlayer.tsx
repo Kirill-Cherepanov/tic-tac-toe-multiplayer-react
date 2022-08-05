@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import GameBoard from './GameBoard';
 import capitalize from '../utilities/capitalize';
 import {
@@ -12,9 +12,9 @@ type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
 
 const CHANCE_OF_RANDOM_MOVE = [1, 0.25, 0];
 
-export default function SinglePlayer({ setGameMode }: Props) {
+export default function AIPlayer({ setGameMode }: Props) {
   const [difficulty, setDifficulty] = useState(-1);
-  const [side, setSide] = useState('');
+  const [side, setSide] = useState('o');
   const [currentMove, setCurrentMove] = useState('o');
   const [cellsMarks, setCellsMarks] = useState(Array<string>(9).fill(''));
   const [endMessage, setEndMessage] = useState({
@@ -26,74 +26,92 @@ export default function SinglePlayer({ setGameMode }: Props) {
       setEndMessage((endMessage) => {
         return { ...endMessage, ...{ hidden: true } };
       });
+      setCurrentMove('o');
+      setSide((side) => (side === 'o' ? 'x' : 'o'));
     }
   });
 
-  useEffect(() => {
-    const prevMove = currentMove === 'o' ? 'x' : 'o';
-    const isWin = checkWin(prevMove, cellsMarks);
+  const checkGameOver = (move: string, cellsMarks: string[]) => {
+    const isWin = checkWin(move, cellsMarks);
     const isDraw = checkDraw(cellsMarks);
 
-    if (isWin || isDraw) {
-      setCurrentMove('o');
-      setSide((side) => (side === 'o' ? 'x' : 'o'));
+    if (!isWin && !isDraw) return false;
 
-      const messageText = isWin
-        ? `${prevMove === 'x' ? 'Cross' : 'Circle'} player wins!`
-        : 'Draw!';
+    const messageText = isWin
+      ? `${move === 'x' ? 'Cross' : 'Circle'} player wins!`
+      : 'Draw!';
 
-      setEndMessage((endMessage) => {
-        return {
-          ...endMessage,
-          ...{
-            hidden: false,
-            messageText: messageText
-          }
-        };
+    setEndMessage((endMessage) => {
+      return {
+        ...endMessage,
+        ...{
+          hidden: false,
+          messageText: messageText
+        }
+      };
+    });
+
+    return true;
+  };
+
+  const makeAiMove = useCallback(
+    (move: string) => {
+      setCellsMarks((cellsMarks) => {
+        let pos: number;
+
+        if (Math.random() <= CHANCE_OF_RANDOM_MOVE[difficulty]) {
+          pos = getRandomMove([...cellsMarks]);
+        } else pos = getBestMove([...cellsMarks], move);
+
+        const newCellsMarks = [
+          ...cellsMarks.slice(0, pos),
+          move,
+          ...cellsMarks.slice(pos + 1)
+        ];
+
+        return newCellsMarks;
       });
 
+      setCurrentMove(side);
+    },
+    [difficulty, side]
+  );
+
+  const makeMove = (pos: number) => {
+    if (cellsMarks[pos]) return;
+    if (currentMove !== side) return;
+
+    const newCellsMarks = [
+      ...cellsMarks.slice(0, pos),
+      currentMove,
+      ...cellsMarks.slice(pos + 1)
+    ];
+    const newCurrentMove = currentMove === 'o' ? 'x' : 'o';
+
+    setCellsMarks(newCellsMarks);
+    setCurrentMove(newCurrentMove);
+  };
+
+  useEffect(() => {
+    const prevMove = currentMove === 'x' ? 'o' : 'x';
+    if (checkGameOver(prevMove, cellsMarks)) {
+      console.log('over');
       return;
     }
 
-    if (side === currentMove) return;
-
-    setCellsMarks((cellsMarks) => {
-      let pos: number;
-
-      if (Math.random() <= CHANCE_OF_RANDOM_MOVE[difficulty]) {
-        pos = getRandomMove(cellsMarks);
-      } else pos = getBestMove([...cellsMarks], currentMove);
-
-      return [
-        ...cellsMarks.slice(0, pos),
-        currentMove,
-        ...cellsMarks.slice(pos + 1)
-      ];
-    });
-    setCurrentMove((move) => (move === 'o' ? 'x' : 'o'));
-    return;
-  }, [cellsMarks, currentMove, difficulty, side]);
+    if (side !== currentMove) makeAiMove(currentMove);
+  }, [cellsMarks, currentMove, makeAiMove, side]);
 
   return (
     <>
       <GameBoard
         className={side}
-        cellClickHandler={(pos: number) => {
-          if (cellsMarks[pos]) return;
-          if (currentMove !== side) return;
-
-          setCellsMarks((cellsMarks) => [
-            ...cellsMarks.slice(0, pos),
-            currentMove,
-            ...cellsMarks.slice(pos + 1)
-          ]);
-          setCurrentMove((currentMove) => (currentMove === 'o' ? 'x' : 'o'));
-        }}
+        cellClickHandler={makeMove}
         cellsMarks={cellsMarks}
         endMessageProps={endMessage}
       />
       {difficulty !== -1 ? null : (
-        <div className={'end-message'}>
+        <div className="end-message show">
           <div className="end-text">Choose difficulty</div>
           <button id="restart-button" onClick={() => setDifficulty(3)}>
             Impossible
@@ -114,7 +132,7 @@ export default function SinglePlayer({ setGameMode }: Props) {
           return (
             <button
               id={`${mode}-button`}
-              className={'game-mode-btn' + (mode === 'single' ? ' active' : '')}
+              className={'game-mode-btn' + (mode === 'ai' ? ' active' : '')}
               key={mode}
               onClick={() => {
                 setGameMode(mode);

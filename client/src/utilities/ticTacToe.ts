@@ -22,12 +22,12 @@ export function checkDraw(cellsMarks: string[]): boolean {
 export function getRandomMove(cellsMarks: string[]) {
   const emptyMarks = cellsMarks
     .map((mark, i) => (mark ? null : i))
-    .filter((mark) => mark) as number[];
-  return emptyMarks[Math.floor(Math.random() * (emptyMarks.length + 1))];
+    .filter((mark) => mark !== null) as number[];
+  const pos = emptyMarks[Math.floor(Math.random() * emptyMarks.length)];
+  return pos;
 }
 
 export function getBestMove(cellsMarks: string[], side: string): number {
-  // Randomize the move if it's the first move
   if (cellsMarks.every((mark) => !mark)) return getRandomMove(cellsMarks);
 
   const opponent = side === 'o' ? 'x' : 'o';

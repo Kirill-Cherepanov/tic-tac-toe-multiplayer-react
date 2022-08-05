@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import './App.sass';
 import SinglePlayer from './components/SinglePlayer';
 import EnterMultiplayer from './components/EnterMultiplayer';
+import AIPlayer from './components/AIPlayer';
 
 const getBoard = (
   gameMode: string,
@@ -14,8 +15,7 @@ const getBoard = (
     case 'multi':
       return <EnterMultiplayer setGameMode={setGameMode} />;
     case 'ai':
-      alert('Not yet implemented');
-      return <SinglePlayer setGameMode={setGameMode} />;
+      return <AIPlayer setGameMode={setGameMode} />;
   }
 };
 
