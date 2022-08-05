@@ -112,19 +112,19 @@ export default function AIPlayer({ setGameMode }: Props) {
       {difficulty !== -1 ? null : (
         <div className="end-message show">
           <div className="end-text">Choose difficulty</div>
-          <button id="restart-button" onClick={() => setDifficulty(3)}>
+          <button id="choose-difficulty" onClick={() => setDifficulty(3)}>
             Impossible
           </button>
-          <button id="restart-button" onClick={() => setDifficulty(2)}>
+          <button id="choose-difficulty" onClick={() => setDifficulty(2)}>
             Hard
           </button>
-          <button id="restart-button" onClick={() => setDifficulty(1)}>
+          <button id="choose-difficulty" onClick={() => setDifficulty(1)}>
             Normal
           </button>
-          <button id="restart-button" onClick={() => setDifficulty(0)}>
+          <button id="choose-difficulty" onClick={() => setDifficulty(0)}>
             Easy
           </button>
-          <button id="restart-button" onClick={() => setDifficulty(4)}>
+          <button id="choose-difficulty" onClick={() => setDifficulty(4)}>
             Reverse Impossible
           </button>
         </div>
