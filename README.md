@@ -1,5 +1,7 @@
 ## Tic-tac-toe with singleplayer, multiplayer and AI
 
+Deploy: https://kissmyussr-tic-tac-toe-multiplayer.netlify.app/
+
 Built with: React+TypeScript+Sass on frontend, Socket.io+TypeScript on backend
 
 First of all, don't be deceived. While this project is based on tic-tac-toe which is a very simple game, my main focus was on developing a multiplayer that could be transfered to any other game and this project is meant to be centered mostly around it.
