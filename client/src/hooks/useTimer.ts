@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 type Timer = {
   setTime: (newTime: number) => void;
@@ -9,66 +9,70 @@ type Timer = {
 
 const UPDATE_TIME = 1000;
 
-export default function useTimer(
-  initialTime: number
-): [React.MutableRefObject<Timer>, number] {
+let intervalID: undefined | NodeJS.Timer;
+
+export default function useTimer(initialTime: number): [Timer, number] {
   const [time, setTime] = useState(initialTime);
   const [startTime, setStartTime] = useState<number | null>(Date.now());
   const [maxTime, setMaxTime] = useState(initialTime);
-  const [intervalID, setIntervalID] = useState<
-    undefined | void | NodeJS.Timer
-  >();
+  const [isOn, setIsOn] = useState(true);
 
-  const pause = () => {
-    setIntervalID((id) => id && clearInterval(id));
-    if (startTime === null) return;
-    setTime(maxTime - (Date.now() - startTime!) / 1000);
-    setMaxTime(maxTime - (Date.now() - startTime!) / 1000);
-    setStartTime(null);
-  };
+  useEffect(() => {
+    if (intervalID) clearInterval(intervalID);
 
-  const setTimerTime = (newTime: number) => {
-    setIntervalID((id) => id && clearInterval(id));
+    if (!isOn) return;
+
+    intervalID = setInterval(() => {
+      setTime((time) => {
+        if (time - (UPDATE_TIME + 100) / 1000 <= 0) {
+          clearInterval(intervalID!);
+          setMaxTime(0);
+          setStartTime(null);
+          return 0;
+        }
+        return maxTime - (Date.now() - startTime!) / 1000;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalID);
+    };
+  }, [isOn, maxTime, startTime]);
+
+  const setTimerTime = useCallback((newTime: number) => {
+    setIsOn(true);
     setMaxTime(newTime);
     setTime(newTime);
     setStartTime(Date.now());
+  }, []);
 
-    setIntervalID(() =>
-      setInterval(() => {
-        setTime((time) => {
-          if (time - (UPDATE_TIME + 100) / 1000 <= 0) {
-            clearInterval(intervalID!);
-            setMaxTime(0);
-            setStartTime(null);
-            return 0;
-          }
-          return maxTime - (Date.now() - startTime!) / 1000;
-        });
-      }, UPDATE_TIME)
-    );
-  };
+  const pause = useCallback(() => {
+    setIsOn(false);
+    setTime((time) => {
+      setMaxTime(time);
+      return time;
+    });
+  }, []);
 
-  const reset = () => {
-    setIntervalID((id) => id && clearInterval(id));
+  const resume = useCallback(() => {
+    setIsOn(true);
+    setStartTime(Date.now());
+  }, []);
+
+  const reset = useCallback(() => {
+    setIsOn(false);
     setMaxTime(0);
     setTime(0);
-    setStartTime(null);
-  };
+  }, []);
 
-  const resume = () => setTimerTime(maxTime);
-
-  const timer = useRef<Timer>({
-    setTime: setTimerTime,
-    resume,
-    pause,
-    reset
-  });
-  timer.current = {
-    setTime: setTimerTime,
-    resume,
-    pause,
-    reset
-  };
+  const timer = useMemo(() => {
+    return {
+      setTime: setTimerTime,
+      pause: pause,
+      resume: resume,
+      reset: reset
+    };
+  }, [pause, reset, resume, setTimerTime]);
 
   return [timer, time];
 }

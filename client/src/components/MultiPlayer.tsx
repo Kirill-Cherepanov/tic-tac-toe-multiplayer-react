@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import GameBoard from './GameBoard';
 import { Socket } from 'socket.io-client';
-import useTimer from '../hooks/useTimer2';
+import useTimer from '../hooks/useTimer';
 
 type MultiPlayerProps = {
   breakTime: number;
