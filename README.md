@@ -1,6 +1,6 @@
 ## Tic-tac-toe with singleplayer, multiplayer and AI
 
-Deploy: https://kissmyussr-tic-tac-toe-multiplayer.netlify.app/
+Deploy: https://tic-tac-toe-kirill-cherepanov.netlify.app/
 
 Built with: React+TypeScript+Sass on frontend, Socket.io+TypeScript on backend
 
