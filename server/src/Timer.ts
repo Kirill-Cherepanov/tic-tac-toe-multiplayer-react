@@ -1,6 +1,6 @@
 export default class Timer {
   private TIMERINTERVAL: number;
-  private _time: number; // current time
+  private _time: number;
   private _maxTime: number;
   private timer: NodeJS.Timer | undefined;
   private callback!: Function;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// import { io, Socket } from 'socket.io-client';
+
 import './App.sass';
 import SinglePlayer from './components/SinglePlayer';
 import EnterMultiplayer from './components/EnterMultiplayer';

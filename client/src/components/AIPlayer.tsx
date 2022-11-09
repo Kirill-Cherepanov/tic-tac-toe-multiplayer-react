@@ -1,18 +1,21 @@
 import React, { useCallback, useEffect, useState } from 'react';
+
 import GameBoard from './GameBoard';
 import capitalize from '../utilities/capitalize';
 import {
   getBestMove,
   getRandomMove,
   checkDraw,
-  checkWin
+  checkWin,
 } from '../utilities/ticTacToe';
 
-type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
+type AIPlayerProps = {
+  setGameMode: React.Dispatch<React.SetStateAction<string>>;
+};
 
 const CHANCE_OF_RANDOM_MOVE = [1, 0.75, 0.25, 0];
 
-export default function AIPlayer({ setGameMode }: Props) {
+export default function AIPlayer({ setGameMode }: AIPlayerProps) {
   const [difficulty, setDifficulty] = useState(-1);
   const [side, setSide] = useState('o');
   const [currentMove, setCurrentMove] = useState('o');
@@ -28,7 +31,7 @@ export default function AIPlayer({ setGameMode }: Props) {
       });
       setCurrentMove('o');
       setSide((side) => (side === 'o' ? 'x' : 'o'));
-    }
+    },
   });
 
   const checkGameOver = (move: string, cellsMarks: string[]) => {
@@ -46,8 +49,8 @@ export default function AIPlayer({ setGameMode }: Props) {
         ...endMessage,
         ...{
           hidden: false,
-          messageText: messageText
-        }
+          messageText: messageText,
+        },
       };
     });
 
@@ -68,7 +71,7 @@ export default function AIPlayer({ setGameMode }: Props) {
         const newCellsMarks = [
           ...cellsMarks.slice(0, pos),
           move,
-          ...cellsMarks.slice(pos + 1)
+          ...cellsMarks.slice(pos + 1),
         ];
 
         return newCellsMarks;
@@ -86,7 +89,7 @@ export default function AIPlayer({ setGameMode }: Props) {
     const newCellsMarks = [
       ...cellsMarks.slice(0, pos),
       currentMove,
-      ...cellsMarks.slice(pos + 1)
+      ...cellsMarks.slice(pos + 1),
     ];
     const newCurrentMove = currentMove === 'o' ? 'x' : 'o';
 

@@ -1,6 +1,4 @@
-import React from 'react';
-
-type Props = {
+type GameBoardProps = {
   className: string;
   cellClickHandler: (positon: number) => void;
   cellsMarks: string[];
@@ -16,8 +14,8 @@ export default function GameBoard({
   className,
   cellClickHandler,
   cellsMarks,
-  endMessageProps
-}: Props) {
+  endMessageProps,
+}: GameBoardProps) {
   return (
     <>
       <div className={'gameboard ' + className}>

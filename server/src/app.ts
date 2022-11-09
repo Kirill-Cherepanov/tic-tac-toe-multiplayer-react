@@ -12,7 +12,7 @@ import {
   isUserInSearch,
   areSearchParamsCompatible,
   calculateGameParams,
-  getGameData
+  getGameData,
 } from './DbManipulation';
 
 const httpServer = http.createServer();
@@ -28,10 +28,10 @@ const corsOptions = {
       'http://37.214.72.201:3000',
       'http://37.214.72.201',
       '37.214.72.201:3000',
-      '37.214.72.201'
+      '37.214.72.201',
     ],
-    methods: ['GET']
-  }
+    methods: ['GET'],
+  },
 };
 
 const io = new Server<
@@ -119,16 +119,16 @@ io.on('connection', (socket) => {
     const room: GameData = {
       inviter: {
         id: inviter,
-        username: dbData.players[inviter].username
+        username: dbData.players[inviter].username,
       },
       invitee: {
         id: socket.id,
-        username: dbData.players[socket.id].username
+        username: dbData.players[socket.id].username,
       },
       currentBoard: Array(9).fill('') as BoardMoves,
       currentMove: inviter,
       breakTime,
-      matchTime
+      matchTime,
     };
     dbData.games[inviter] = room;
 
@@ -193,7 +193,6 @@ function startBreak(socketID: string): void {
   dbData.games[gameID].currentMove = opponent.id;
 
   timers[inviter.id].start((breakTime + 1) * 1000, () => {
-    console.log(1);
     io.to(invitee.id).emit('dismissGame', 'Ran out of break time', true);
     io.to(inviter.id).emit('dismissGame', 'Ran out of break time', true);
     delete dbData.games[inviter.id];
@@ -269,7 +268,7 @@ function handleMove(
     [3, 4, 5],
     [6, 7, 8],
     [0, 4, 8],
-    [2, 4, 6]
+    [2, 4, 6],
   ];
 
   const game = getGameData(dbData, socket.id);

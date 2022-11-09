@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import capitalize from '../utilities/capitalize';
 import { io, Socket } from 'socket.io-client';
+
+import capitalize from '../utilities/capitalize';
 import MultiplayerMenu from './MultiplayerMenu';
 import useLocalStorage from '../hooks/useLocalStorage';
 import MultiPlayer from './MultiPlayer';
+import { API_URL } from '../config';
 
-type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
+type EnterMultiplayerProps = {
+  setGameMode: React.Dispatch<React.SetStateAction<string>>;
+};
 
 type MultiPlayerProps = {
   breakTime: number;
@@ -19,17 +23,9 @@ interface UsernameFormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
 }
 
-const HEROKU_BACKEND = 'https://lit-citadel-75107.herokuapp.com/';
-const LOCAL_BACKEND = 'http://localhost:8080';
-
-const getBackendURL = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return HEROKU_BACKEND;
-  }
-  return LOCAL_BACKEND;
-};
-
-export default function EnterMultiplayer({ setGameMode }: Props) {
+export default function EnterMultiplayer({
+  setGameMode,
+}: EnterMultiplayerProps) {
   const [socket, setSocket] = useState<
     undefined | Socket<ServerToClientEvents, ClientToServerEvents>
   >();
@@ -48,7 +44,7 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
 
   useEffect(() => {
     setSocket(
-      io(getBackendURL()) as Socket<ServerToClientEvents, ClientToServerEvents>
+      io(API_URL) as Socket<ServerToClientEvents, ClientToServerEvents>
     );
   }, []);
 
@@ -84,7 +80,7 @@ export default function EnterMultiplayer({ setGameMode }: Props) {
           socket.emit('enter', username);
           setIsInGame(false);
         },
-        socket
+        socket,
       });
       setIsInGame(true);
       setIsInSearch(false);

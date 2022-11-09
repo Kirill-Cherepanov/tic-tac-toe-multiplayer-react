@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import GameBoard from './GameBoard';
 import { Socket } from 'socket.io-client';
 import useTimer from '../hooks/useTimer';
@@ -16,7 +17,7 @@ export default function MultiPlayer({
   matchTime,
   opponent,
   leaveGame,
-  socket
+  socket,
 }: MultiPlayerProps) {
   const [side, setSide] = useState('');
   const [currentMove, setCurrentMove] = useState('');
@@ -31,7 +32,7 @@ export default function MultiPlayer({
       setEndMessage((endMessage) => {
         return {
           ...endMessage,
-          ...{ buttonText: 'Wait', messageText: 'Waiting for the opponent' }
+          ...{ buttonText: 'Wait', messageText: 'Waiting for the opponent' },
         };
       });
 
@@ -40,7 +41,7 @@ export default function MultiPlayer({
         socket.emit('ready');
         socket.off('opponentReady');
       });
-    }
+    },
   });
   const [timer, time] = useTimer(breakTime);
 
@@ -49,7 +50,7 @@ export default function MultiPlayer({
       setCellsMarks((cellsMarks) => [
         ...cellsMarks.slice(0, pos),
         currentMove,
-        ...cellsMarks.slice(pos + 1)
+        ...cellsMarks.slice(pos + 1),
       ]);
       setCurrentMove((currentMove) => (currentMove === 'o' ? 'x' : 'o'));
     },
@@ -73,8 +74,8 @@ export default function MultiPlayer({
           ...{
             hidden: true,
             buttonText: 'Ready',
-            messageText: 'Are you ready?'
-          }
+            messageText: 'Are you ready?',
+          },
         };
       });
       setSide(isFirstMove ? 'o' : 'x');
@@ -87,7 +88,7 @@ export default function MultiPlayer({
       setEndMessage((endMessage) => {
         return {
           ...endMessage,
-          ...{ hidden: false, messageText: message ?? `${winner} wins!` }
+          ...{ hidden: false, messageText: message ?? `${winner} wins!` },
         };
       });
     });
@@ -102,7 +103,7 @@ export default function MultiPlayer({
         hidden: false,
         buttonText: 'Leave',
         messageText: message,
-        onClick: leaveGame
+        onClick: leaveGame,
       });
     });
 
@@ -112,7 +113,6 @@ export default function MultiPlayer({
       socket.off('startGame');
       socket.off('gameOver');
       socket.off('dismissGame');
-      // timer.reset();
       timerCurrent.reset();
     };
   }, [leaveGame, socket, matchTime, breakTime, timer]);

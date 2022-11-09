@@ -1,6 +1,6 @@
 import React from 'react';
 
-type Props = {
+type SearchSettingsProps = {
   searchParamsState: [
     SearchParams,
     React.Dispatch<React.SetStateAction<SearchParams>>
@@ -8,7 +8,10 @@ type Props = {
   goBack: () => void;
 };
 
-export default function SearchSettings({ searchParamsState, goBack }: Props) {
+export default function SearchSettings({
+  searchParamsState,
+  goBack,
+}: SearchSettingsProps) {
   const [searchParams, setSearchParams] = searchParamsState;
   return (
     <>

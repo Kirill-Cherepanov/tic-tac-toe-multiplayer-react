@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+
 import GameBoard from './GameBoard';
 import capitalize from '../utilities/capitalize';
 import { checkDraw, checkWin } from '../utilities/ticTacToe';
 
-type Props = { setGameMode: React.Dispatch<React.SetStateAction<string>> };
+type SinglePlayerProps = {
+  setGameMode: React.Dispatch<React.SetStateAction<string>>;
+};
 
-export default function SinglePlayer({ setGameMode }: Props) {
+export default function SinglePlayer({ setGameMode }: SinglePlayerProps) {
   const [currentMove, setCurrentMove] = useState('o');
   const [cellsMarks, setCellsMarks] = useState(Array<string>(9).fill(''));
   const [endMessage, setEndMessage] = useState({
@@ -17,7 +20,7 @@ export default function SinglePlayer({ setGameMode }: Props) {
       setEndMessage((endMessage) => {
         return { ...endMessage, ...{ hidden: true } };
       });
-    }
+    },
   });
 
   useEffect(() => {
@@ -41,8 +44,8 @@ export default function SinglePlayer({ setGameMode }: Props) {
         ...endMessage,
         ...{
           hidden: false,
-          messageText: messageText
-        }
+          messageText: messageText,
+        },
       };
     });
   }, [cellsMarks, currentMove]);
@@ -57,7 +60,7 @@ export default function SinglePlayer({ setGameMode }: Props) {
           setCellsMarks((cellsMarks) => [
             ...cellsMarks.slice(0, pos),
             currentMove,
-            ...cellsMarks.slice(pos + 1)
+            ...cellsMarks.slice(pos + 1),
           ]);
           setCurrentMove((currentMove) => (currentMove === 'o' ? 'x' : 'o'));
         }}

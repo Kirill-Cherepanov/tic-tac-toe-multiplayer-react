@@ -47,7 +47,6 @@ type GameData = {
     id: string;
     username: string;
   };
-  // firstMove: string;
   currentMove: string;
   currentBoard: BoardMoves;
   matchTime: number;

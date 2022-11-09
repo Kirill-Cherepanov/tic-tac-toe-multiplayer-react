@@ -4,13 +4,18 @@
   "description": "Backend of tic-tac-toe online",
   "main": "app.js",
   "engines": {
-    "node": "17.8.0"
+    "node": ">=17.8.0"
   },
   "scripts": {
-    "start": "node dist/app.js",
-    "postinstall": "tsc",
-    "nodemon": "nodemon -e js dist/app",
-    "watch-ts": "tsc -w"
+    "nodemon-server": "npx nodemon dist/app",
+    "development": "npm run nodemon-server",
+    "watch-ts": "tsc -w",
+    "start": "npx concurrently \"npm run watch-ts\" \"npm run development\"",
+    "build": "tsc",
+    "postinstall": "npm install typescript -g",
+    "production": "node dist/app.js",
+    "docker:build": "docker build -t tic_tac_toe_api .",
+    "docker:run": "docker run -p 8080:8080 --name tic_tac_toe_api_c tic_tac_toe_api"
   },
   "keywords": [
     "tic-tac-toe",

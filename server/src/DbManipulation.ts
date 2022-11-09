@@ -1,32 +1,4 @@
-import { Socket, Server } from 'socket.io';
-
-// export function updateDb(dbData: DbData): Promise<void> {
-//   return new Promise((resolve, reject) => {
-//     const databaseWrite = fs.createWriteStream(
-//       'dist/CurrentPlayers.json',
-//       'utf-8'
-//     );
-//     databaseWrite.write(JSON.stringify(dbData));
-//     databaseWrite.end();
-//     databaseWrite.on('finish', resolve);
-//     databaseWrite.on('error', reject);
-//   });
-// }
-
-// export async function readDb(): Promise<DbData> {
-//   // const a: DbData = await databaseRead.read()
-
-//   let dbJson: string = '';
-//   try {
-//     dbJson = (await fsPromises.readFile('dist/CurrentPlayers.json')).toString(
-//       'utf-8'
-//     );
-//     return <DbData>JSON.parse(dbJson);
-//   } catch (e) {
-//     console.log('DBJSON: "' + dbJson + '"\n\n');
-//     throw 'Error in readDb:\n' + e;
-//   }
-// }
+import { Socket } from 'socket.io';
 
 export function areSearchParamsCompatible(
   params1: SearchParams,
@@ -57,7 +29,7 @@ export function updateUser(
       username: username,
       invited: [],
       wasInvited: [],
-      searchParams
+      searchParams,
     };
     return;
   }
@@ -147,8 +119,8 @@ export const getSearchUpdater = (): SearchUpdater =>
             {
               username: player[1].username,
               invited: player[1].invited.includes(socket.id),
-              wasInvited: player[1].wasInvited.includes(socket.id)
-            }
+              wasInvited: player[1].wasInvited.includes(socket.id),
+            },
           ])
       );
       socket.emit('searchUpdate', sessionsData);
@@ -207,22 +179,6 @@ export function isUserInSearch(
   );
 }
 
-// export function isUserInGame(
-//   dbData: DbData,
-//   socketID: string
-// ): string | boolean {
-//   const games = Object.values(dbData.games);
-//   let room: string | undefined;
-
-//   for (let game of games) {
-//     if (Object.keys(game.players).includes(socketID)) {
-//       room = Object.keys(game.players)[1];
-//     }
-//   }
-
-//   return room || false;
-// }
-
 export function calculateGameParams(
   params1: SearchParams,
   params2: SearchParams
@@ -267,52 +223,6 @@ export function getGameData(dbData: DbData, socketID: string) {
     breakTime: gameData.breakTime,
     matchTime: gameData.matchTime,
     currentMove: gameData.currentMove,
-    currentBoard: gameData.currentBoard
+    currentBoard: gameData.currentBoard,
   };
 }
-
-// export function dismissGame(
-//   dbData: DbData,
-//   socketID: string,
-//   isDisconnected: boolean
-// ): void {
-//   let room_id: string | undefined;
-//   let opponent: [string, string] | undefined;
-//   let username: string | undefined;
-
-//   for (let game of Object.entries(dbData.games)) {
-//     if (Object.keys(game[1].players).includes(socketID)) {
-//       room_id = game[0];
-//       opponent = Object.entries(game[1].players).filter(
-//         (i) => i[0] !== socketID
-//       )[0];
-//       username = game[1].players[socketID];
-//     }
-//   }
-//   if (
-//     opponent === undefined ||
-//     room_id === undefined ||
-//     username === undefined
-//   ) {
-//     const errorMessage = `Can not delete the user ${socketID}.\nThere is no such user in\n${JSON.stringify(
-//       dbData.games
-//     )}!`;
-//     throw Error(errorMessage);
-//   }
-
-//   if (!isDisconnected) {
-//     dbData.players[socketID] = {
-//       username: username,
-//       invited: [],
-//       wasInvited: []
-//     };
-//   }
-
-//   dbData.players[opponent[0]] = {
-//     username: opponent[1],
-//     invited: [],
-//     wasInvited: []
-//   };
-
-//   delete dbData.games[room_id];
-// }

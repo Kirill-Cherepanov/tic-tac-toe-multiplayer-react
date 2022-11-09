@@ -1,6 +1,6 @@
 const dbData: DbData = {
   players: {},
-  games: {}
+  games: {},
 };
 
 export default dbData;

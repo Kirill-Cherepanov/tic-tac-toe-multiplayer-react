@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import SearchSettings from './SearchSettings';
 import { Socket } from 'socket.io-client';
+
+import SearchSettings from './SearchSettings';
 import useLocalStorage from '../hooks/useLocalStorage';
 
-type Props = {
+type MultiplayerMenuProps = {
   goBack: () => void;
   socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 };
@@ -11,15 +12,18 @@ type Props = {
 const DEFAULT_SEARCH_PARAMS: SearchParams = {
   matchTime: {
     value: 20,
-    strict: false
+    strict: false,
   },
   breakTime: {
     value: 20,
-    strict: false
-  }
+    strict: false,
+  },
 };
 
-export default function MultiplayerMenu({ goBack, socket }: Props) {
+export default function MultiplayerMenu({
+  goBack,
+  socket,
+}: MultiplayerMenuProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionsData>({});
   const [searchParams, setSearchParams] = useLocalStorage(
@@ -93,9 +97,9 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
                             [socketID]: {
                               username: session.username,
                               wasInvited: false,
-                              invited: false
-                            }
-                          }
+                              invited: false,
+                            },
+                          },
                         };
                       });
                     }}
@@ -129,9 +133,9 @@ export default function MultiplayerMenu({ goBack, socket }: Props) {
                     [socketID]: {
                       username: sessions[socketID].username,
                       wasInvited: true,
-                      invited: false
-                    }
-                  }
+                      invited: false,
+                    },
+                  },
                 };
               });
             };
