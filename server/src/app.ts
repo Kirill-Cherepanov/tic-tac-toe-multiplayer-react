@@ -20,8 +20,7 @@ const httpServer = http.createServer();
 const corsOptions = {
   cors: {
     origin: [
-      'https://kissmyussr-tic-tac-toe-multiplayer.netlify.app',
-      'https://62ebe3cf2717ce2980c65965--kissmyussr-tic-tac-toe-multiplayer.netlify.app',
+      'https://tic-tac-toe-kirill-cherepanov.netlify.app',
       'http://127.0.0.1:3000',
       'http://192.168.100.2:3000',
       'http://localhost:3000',
