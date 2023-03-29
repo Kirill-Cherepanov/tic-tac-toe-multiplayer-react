@@ -27,7 +27,7 @@
     "react",
     "backend"
   ],
-  "author": "KissMyUSSR",
+  "author": "Kirill-Cherepanov",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^4.7.4"
