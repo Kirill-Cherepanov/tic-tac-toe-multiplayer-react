@@ -1,5 +1,7 @@
 # Tic-tac-toe Multiplayer
 
+*Open with multiple tabs in a browser or ask a friend to join to explore multiplayer*
+
 **Type:** a Multiplayer + AI game
 
 **Technologies used:** React, Typescript, Node.js, Socket.io, Sass
@@ -7,6 +9,8 @@
 **Deploy:** https://tic-tac-toe-kirill-cherepanov.netlify.app/
 
 **Repository:** https://github.com/Kirill-Cherepanov/tic-tac-toe-multiplayer-react
+
+![image](https://github.com/Kirill-Cherepanov/tic-tac-toe-multiplayer-react/assets/52123816/8c553bda-af02-4891-bd92-354a3aff0457)
 
 ## What I've built and have learned
 
